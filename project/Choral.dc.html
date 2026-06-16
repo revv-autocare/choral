@@ -1,0 +1,1896 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&family=Spectral:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#241F1A; --ink2:#5E574D; --ink3:#9A9183;
+    --paper:#F6F1E7; --surface:#FFFFFF; --surface2:#FBF7EE;
+    --line:#EAE3D4; --line2:#DED5C2;
+    --indigo:#3F3795; --indigo-d:#2C2670; --indigo-l:#5C53C4; --indigo-soft:#ECEAF8;
+    --gold:#B0843A; --gold-d:#8E681F; --gold-soft:#F4EAD4;
+    --green:#3E7C53; --green-soft:#E7F0E8;
+    --amber:#C07A24; --amber-soft:#F8ECD7;
+    --red:#BE463C; --red-soft:#F7E4E1;
+    --dark:#1B1740; --dark2:#272058;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:#E7E1D3;font-family:'DM Sans',system-ui,-apple-system,sans-serif;color:var(--ink);-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  @keyframes ripple{0%{transform:scale(.5);opacity:.5}100%{transform:scale(2.4);opacity:0}}
+  @keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+  @keyframes breathe{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+  @keyframes glow{0%,100%{opacity:.35}50%{opacity:.7}}
+  @keyframes slideIn{from{opacity:0;transform:translateX(12px)}to{opacity:1;transform:none}}
+  ::-webkit-scrollbar{width:0;height:0}
+</style>
+</helmet>
+
+<div style="min-height:100vh;display:flex;align-items:center;justify-content:center;padding:28px 20px;">
+  <div style="width:412px;height:872px;background:var(--paper);border-radius:38px;overflow:hidden;position:relative;box-shadow:0 40px 90px -28px rgba(40,28,70,.5),0 0 0 1px rgba(0,0,0,.05);display:flex;flex-direction:column;">
+
+    <!-- ============ ROLE SWITCHER (prototype chrome) ============ -->
+    <div style="flex:0 0 auto;background:#1B1740;padding:8px 12px;display:flex;align-items:center;gap:9px;">
+      <span style="font:600 8px/1.2 'DM Sans';letter-spacing:.13em;text-transform:uppercase;color:rgba(255,255,255,.42);flex:0 0 auto;">Preview<br/>as role</span>
+      <div style="flex:1;display:flex;background:rgba(255,255,255,.08);border-radius:9px;padding:3px;gap:2px;">
+        <sc-for list="{{ roleTabs }}" as="rt" hint-placeholder-count="4">
+          <div onClick="{{ rt.pick }}" style="flex:1;text-align:center;padding:6px 2px;border-radius:7px;font:600 10px/1 'DM Sans';cursor:pointer;background:{{ rt.bg }};color:{{ rt.fg }};transition:.15s;">{{ rt.label }}</div>
+        </sc-for>
+      </div>
+    </div>
+
+    <!-- ============ HOME / MY WEEK ============ -->
+    <sc-if value="{{ vHome }}" hint-placeholder-val="{{ true }}">
+    <div style="flex:1;min-height:0;display:flex;flex-direction:column;background:var(--paper);">
+      <div style="flex:0 0 auto;padding:22px 22px 16px;display:flex;align-items:center;gap:12px;">
+        <div style="width:42px;height:42px;border-radius:14px;background:linear-gradient(150deg,var(--indigo-l),var(--indigo-d));display:flex;align-items:center;justify-content:center;color:#fff;font:600 16px/1 'Spectral',serif;box-shadow:0 6px 16px -4px rgba(63,55,149,.5);">{{ initials }}</div>
+        <div style="flex:1;">
+          <div style="font:600 10px/1 'DM Sans';letter-spacing:.16em;text-transform:uppercase;color:var(--ink3);">{{ greetLabel }}</div>
+          <div style="font:600 17px/1.2 'DM Sans';color:var(--ink);margin-top:3px;">{{ memberName }}</div>
+        </div>
+        <div onClick="{{ goBoard }}" style="width:40px;height:40px;border-radius:50%;background:var(--surface);border:1px solid var(--line);display:flex;align-items:center;justify-content:center;position:relative;cursor:pointer;">
+          <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#5E574D" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></svg>
+          <span style="position:absolute;top:8px;right:9px;width:8px;height:8px;background:var(--gold);border-radius:50%;border:2px solid var(--surface);"></span>
+        </div>
+      </div>
+
+      <div style="flex:1;overflow-y:auto;padding:4px 22px 28px;">
+        <div style="font:400 13px/1 'Spectral',serif;font-style:italic;color:var(--ink3);margin-bottom:14px;">{{ choirName }}</div>
+
+        <!-- Tonight hero -->
+        <div style="border-radius:24px;padding:22px;background:linear-gradient(155deg,var(--indigo-d),var(--indigo) 62%,var(--indigo-l));color:#fff;position:relative;overflow:hidden;box-shadow:0 20px 40px -16px rgba(43,38,112,.6);">
+          <div style="position:absolute;right:-26px;top:-26px;width:150px;height:150px;opacity:.5;">
+            <svg viewBox="0 0 30 30" width="150" height="150" fill="none"><rect x="11" y="0" width="8" height="8" rx="1.2" transform="rotate(45 15 4)" fill="#fff" opacity="0.22"></rect><rect x="0" y="11" width="8" height="8" rx="1.2" transform="rotate(45 4 15)" fill="#fff" opacity="0.12"></rect><rect x="22" y="11" width="8" height="8" rx="1.2" transform="rotate(45 26 15)" fill="#fff" opacity="0.12"></rect><rect x="11" y="22" width="8" height="8" rx="1.2" transform="rotate(45 15 26)" fill="#fff" opacity="0.06"></rect></svg>
+          </div>
+          <div style="font:600 10px/1 'DM Sans';letter-spacing:.16em;text-transform:uppercase;color:rgba(255,255,255,.72);">Rehearsal tonight</div>
+          <div style="font:500 24px/1.1 'Spectral',serif;margin-top:9px;">{{ tonightTitle }}</div>
+          <div style="font:500 13px/1.4 'DM Sans';color:rgba(255,255,255,.82);margin-top:6px;">{{ tonightWhen }}</div>
+          <div style="margin-top:16px;padding:11px 14px;background:rgba(255,255,255,.13);border-radius:13px;display:flex;align-items:center;gap:10px;backdrop-filter:blur(4px);">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#F4EAD4" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2M12 19v3"/></svg>
+            <div style="flex:1;font:500 13px/1.3 'DM Sans';">You're leading <strong style="font-weight:600;">{{ myDuty }}</strong></div>
+          </div>
+          <div style="display:flex;gap:10px;margin-top:16px;">
+            <div onClick="{{ goRehearsal }}" style="flex:1;text-align:center;padding:13px;background:#fff;color:var(--indigo-d);border-radius:13px;font:600 14px/1 'DM Sans';cursor:pointer;">View agenda</div>
+            <div onClick="{{ goQr }}" style="flex:0 0 auto;padding:13px 16px;background:rgba(255,255,255,.15);color:#fff;border-radius:13px;font:600 14px/1 'DM Sans';cursor:pointer;display:flex;align-items:center;gap:7px;">
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><path d="M14 14h3v3M20 14v.01M14 20v.01M20 20v.01M17 17v.01"/></svg>Sign in
+            </div>
+          </div>
+        </div>
+
+        <!-- My week stats -->
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-top:18px;">
+          <sc-for list="{{ weekStats }}" as="st" hint-placeholder-count="3">
+            <div style="background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:14px 12px;">
+              <div style="font:600 24px/1 'Spectral',serif;color:var(--indigo);">{{ st.value }}</div>
+              <div style="font:500 11px/1.3 'DM Sans';color:var(--ink2);margin-top:6px;">{{ st.label }}</div>
+            </div>
+          </sc-for>
+        </div>
+
+        <!-- Admin quick actions (role-gated) -->
+        <sc-if value="{{ adminActions }}" hint-placeholder-val="{{ true }}">
+        <div style="margin-top:18px;background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:15px;">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;">
+            <span style="width:6px;height:6px;border-radius:50%;background:var(--gold);"></span>
+            <span style="font:600 11px/1 'DM Sans';letter-spacing:.13em;text-transform:uppercase;color:var(--gold-d);">{{ roleLabel }} actions</span>
+          </div>
+          <div style="display:flex;gap:9px;">
+            <div onClick="{{ addMember }}" style="display:{{ memberManageShow }};flex:1;flex-direction:column;align-items:center;gap:7px;padding:13px 6px;border-radius:13px;background:var(--surface2);border:1px solid var(--line);cursor:pointer;">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#3F3795" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.2"/><path d="M3.5 20a5.5 5.5 0 0 1 11 0"/><path d="M19 8v6M22 11h-6"/></svg>
+              <span style="font:600 11px/1 'DM Sans';">Add member</span>
+            </div>
+            <div onClick="{{ newAnnounce }}" style="display:{{ announceShow }};flex:1;flex-direction:column;align-items:center;gap:7px;padding:13px 6px;border-radius:13px;background:var(--surface2);border:1px solid var(--line);cursor:pointer;">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#3F3795" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></svg>
+              <span style="font:600 11px/1 'DM Sans';">Announce</span>
+            </div>
+            <div onClick="{{ goAddSong }}" style="display:{{ addSongShow }};flex:1;flex-direction:column;align-items:center;gap:7px;padding:13px 6px;border-radius:13px;background:var(--surface2);border:1px solid var(--line);cursor:pointer;">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#3F3795" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V6l10-2v12"/><circle cx="6.5" cy="18" r="2.5"/><circle cx="16.5" cy="16" r="2.5"/></svg>
+              <span style="font:600 11px/1 'DM Sans';">Add song</span>
+            </div>
+          </div>
+        </div>
+        </sc-if>
+
+        <!-- My tasks -->
+        <sc-if value="{{ hasMyTasks }}" hint-placeholder-val="{{ true }}">
+        <div style="margin:24px 0 12px;font:600 16px/1 'DM Sans';">My tasks</div>
+        <sc-for list="{{ myTasks }}" as="tk" hint-placeholder-count="2">
+          <div style="display:flex;align-items:center;gap:12px;padding:13px 14px;background:var(--surface);border:1px solid var(--line);border-radius:14px;margin-bottom:9px;">
+            <span style="width:9px;height:9px;border-radius:50%;background:{{ tk.dotBg }};flex:0 0 auto;"></span>
+            <div style="flex:1;"><div style="font:600 13px/1.2 'DM Sans';">{{ tk.title }}</div><div style="font:400 11px/1 'DM Sans';color:var(--ink3);margin-top:3px;">Due {{ tk.due }}</div></div>
+            <span style="font:600 11px/1 'DM Sans';color:var(--ink2);">{{ tk.status }}</span>
+          </div>
+        </sc-for>
+        </sc-if>
+
+        <!-- Learn this week -->
+        <div style="display:flex;align-items:baseline;justify-content:space-between;margin:24px 0 12px;">
+          <div style="font:600 16px/1 'DM Sans';">Learn this week</div>
+          <div onClick="{{ goSongs }}" style="font:600 12px/1 'DM Sans';color:var(--indigo);cursor:pointer;">Song Bank</div>
+        </div>
+        <div style="display:flex;gap:12px;overflow-x:auto;margin:0 -22px;padding:2px 22px 6px;">
+          <sc-for list="{{ learnList }}" as="sg" hint-placeholder-count="3">
+            <div onClick="{{ sg.open }}" style="flex:0 0 156px;background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:15px;cursor:pointer;">
+              <div style="display:flex;align-items:center;justify-content:space-between;">
+                <span style="font:600 11px/1 'JetBrains Mono',monospace;letter-spacing:.04em;padding:4px 8px;border-radius:7px;background:var(--indigo-soft);color:var(--indigo-d);">{{ sg.key }}</span>
+                <span style="font:500 11px/1 'DM Sans';color:var(--ink3);">{{ sg.tempo }} bpm</span>
+              </div>
+              <div style="font:600 15px/1.25 'Spectral',serif;margin-top:12px;min-height:38px;">{{ sg.title }}</div>
+              <div style="font:400 11px/1 'DM Sans';color:var(--ink3);margin-top:2px;">{{ sg.composer }}</div>
+              <div style="margin-top:13px;height:6px;border-radius:6px;background:var(--line);overflow:hidden;">
+                <div style="height:100%;border-radius:6px;background:var(--gold);width:{{ sg.pct }};"></div>
+              </div>
+              <div style="font:500 10px/1 'DM Sans';color:var(--ink3);margin-top:6px;">{{ sg.pctLabel }} learned</div>
+            </div>
+          </sc-for>
+        </div>
+
+        <!-- Noticeboard preview -->
+        <div style="display:flex;align-items:baseline;justify-content:space-between;margin:24px 0 12px;">
+          <div style="font:600 16px/1 'DM Sans';">From the director</div>
+          <div onClick="{{ goBoard }}" style="font:600 12px/1 'DM Sans';color:var(--indigo);cursor:pointer;">Noticeboard</div>
+        </div>
+        <div onClick="{{ goBoard }}" style="background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:16px;cursor:pointer;">
+          <div style="display:flex;align-items:center;gap:10px;">
+            <div style="width:32px;height:32px;border-radius:50%;background:var(--gold-soft);color:var(--gold-d);display:flex;align-items:center;justify-content:center;font:600 12px/1 'DM Sans';">GA</div>
+            <div style="font:600 13px/1 'DM Sans';">Grace A. <span style="color:var(--ink3);font-weight:400;">· Director</span></div>
+            <div style="margin-left:auto;font:400 11px/1 'DM Sans';color:var(--ink3);">2h</div>
+          </div>
+          <div style="font:400 13px/1.5 'DM Sans';color:var(--ink2);margin-top:10px;">{{ topNotice }}</div>
+        </div>
+      </div>
+    </div>
+    </sc-if>
+
+    <!-- ============ SONG BANK LIST ============ -->
+    <sc-if value="{{ vSongs }}" hint-placeholder-val="{{ true }}">
+    <div style="flex:1;min-height:0;display:flex;flex-direction:column;background:var(--paper);">
+      <div style="flex:0 0 auto;padding:22px 22px 12px;background:var(--paper);">
+        <div style="display:flex;align-items:center;justify-content:space-between;">
+          <h1 style="font:600 26px/1.1 'Spectral',serif;letter-spacing:-.01em;">Song Bank</h1>
+          <div onClick="{{ goAddSong }}" style="width:40px;height:40px;border-radius:50%;background:var(--indigo);display:{{ addSongShow }};align-items:center;justify-content:center;cursor:pointer;box-shadow:0 8px 18px -6px rgba(63,55,149,.6);">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+          </div>
+        </div>
+        <div style="margin-top:14px;display:flex;align-items:center;gap:10px;padding:11px 14px;background:var(--surface);border:1px solid var(--line);border-radius:14px;">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#9A9183" stroke-width="1.8"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+          <span style="font:400 14px/1 'DM Sans';color:var(--ink3);">Search songs, themes, keys…</span>
+        </div>
+        <div style="display:flex;gap:8px;overflow-x:auto;margin:14px -22px 0;padding:0 22px 2px;">
+          <sc-for list="{{ filters }}" as="ft" hint-placeholder-count="5">
+            <div style="flex:0 0 auto;padding:7px 13px;border-radius:999px;font:500 12px/1 'DM Sans';white-space:nowrap;background:{{ ft.bg }};color:{{ ft.fg }};border:1px solid {{ ft.bd }};cursor:pointer;">{{ ft.label }}</div>
+          </sc-for>
+        </div>
+      </div>
+
+      <div style="flex:1;overflow-y:auto;padding:8px 22px 28px;">
+        <div style="font:600 11px/1 'DM Sans';letter-spacing:.14em;text-transform:uppercase;color:var(--gold-d);margin:8px 0 12px;display:flex;align-items:center;gap:8px;">
+          <span style="width:6px;height:6px;border-radius:50%;background:var(--gold);"></span>Coming up for rehearsal
+        </div>
+        <sc-for list="{{ comingSongs }}" as="sg" hint-placeholder-count="3">
+          <div onClick="{{ sg.open }}" style="background:var(--surface);border:1px solid var(--line2);border-radius:18px;padding:15px;margin-bottom:11px;cursor:pointer;box-shadow:0 2px 8px -4px rgba(40,28,70,.12);">
+            <div style="display:flex;align-items:center;gap:13px;">
+              <div onClick="{{ sg.play }}" style="width:46px;height:46px;flex:0 0 auto;border-radius:13px;background:linear-gradient(150deg,var(--indigo-l),var(--indigo-d));display:flex;align-items:center;justify-content:center;color:#fff;">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="#fff"><path d="M8 5v14l11-7z"/></svg>
+              </div>
+              <div style="flex:1;min-width:0;">
+                <div style="font:600 16px/1.2 'Spectral',serif;">{{ sg.title }}</div>
+                <div style="font:400 12px/1 'DM Sans';color:var(--ink3);margin-top:4px;">{{ sg.composer }} · {{ sg.tempo }} bpm</div>
+              </div>
+              <span style="font:600 12px/1 'JetBrains Mono',monospace;padding:5px 9px;border-radius:8px;background:var(--indigo-soft);color:var(--indigo-d);">{{ sg.key }}</span>
+            </div>
+            <div style="display:flex;gap:6px;margin-top:12px;flex-wrap:wrap;">
+              <sc-for list="{{ sg.tags }}" as="tg" hint-placeholder-count="2">
+                <span style="font:500 11px/1 'DM Sans';padding:4px 9px;border-radius:7px;background:var(--surface2);border:1px solid var(--line);color:var(--ink2);">{{ tg }}</span>
+              </sc-for>
+              <span style="margin-left:auto;font:500 11px/1.4 'DM Sans';color:var(--green);display:flex;align-items:center;gap:5px;">{{ sg.partsLabel }}</span>
+            </div>
+          </div>
+        </sc-for>
+
+        <div style="font:600 11px/1 'DM Sans';letter-spacing:.14em;text-transform:uppercase;color:var(--ink3);margin:22px 0 12px;">All songs · {{ allCount }}</div>
+        <sc-for list="{{ otherSongs }}" as="sg" hint-placeholder-count="5">
+          <div onClick="{{ sg.open }}" style="display:flex;align-items:center;gap:13px;padding:13px 4px;border-bottom:1px solid var(--line);cursor:pointer;">
+            <div onClick="{{ sg.play }}" style="width:40px;height:40px;flex:0 0 auto;border-radius:11px;background:var(--surface);border:1px solid var(--line2);display:flex;align-items:center;justify-content:center;color:var(--indigo);">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+            </div>
+            <div style="flex:1;min-width:0;">
+              <div style="font:600 14px/1.2 'DM Sans';">{{ sg.title }}</div>
+              <div style="font:400 12px/1 'DM Sans';color:var(--ink3);margin-top:3px;">{{ sg.composer }} · {{ sg.tagLine }}</div>
+            </div>
+            <span style="font:600 11px/1 'JetBrains Mono',monospace;color:var(--ink2);">{{ sg.key }}</span>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+    </sc-if>
+
+    <!-- ============ SONG DETAIL ============ -->
+    <sc-if value="{{ vSong }}" hint-placeholder-val="{{ true }}">
+    <div style="flex:1;min-height:0;display:flex;flex-direction:column;background:var(--paper);">
+      <div style="flex:0 0 auto;padding:20px 18px 16px;background:linear-gradient(160deg,var(--indigo-d),var(--indigo));color:#fff;position:relative;overflow:hidden;">
+        <div style="position:absolute;right:-20px;bottom:-40px;opacity:.4;"><svg viewBox="0 0 30 30" width="150" height="150" fill="none"><rect x="11" y="0" width="8" height="8" rx="1.2" transform="rotate(45 15 4)" fill="#fff" opacity="0.18"></rect><rect x="0" y="11" width="8" height="8" rx="1.2" transform="rotate(45 4 15)" fill="#fff" opacity="0.1"></rect><rect x="22" y="11" width="8" height="8" rx="1.2" transform="rotate(45 26 15)" fill="#fff" opacity="0.1"></rect></svg></div>
+        <div onClick="{{ back }}" style="width:38px;height:38px;border-radius:50%;background:rgba(255,255,255,.16);display:flex;align-items:center;justify-content:center;cursor:pointer;">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+        </div>
+        <div style="margin-top:18px;font:600 10px/1 'DM Sans';letter-spacing:.16em;text-transform:uppercase;color:rgba(255,255,255,.7);">{{ song.tagLine }}</div>
+        <h1 style="font:500 30px/1.08 'Spectral',serif;margin-top:8px;">{{ song.title }}</h1>
+        <div style="font:400 14px/1 'DM Sans';color:rgba(255,255,255,.82);margin-top:7px;">{{ song.composer }}</div>
+        <div style="display:flex;gap:9px;margin-top:16px;">
+          <div style="padding:9px 13px;background:rgba(255,255,255,.13);border-radius:11px;"><div style="font:400 10px/1 'DM Sans';color:rgba(255,255,255,.65);">Key</div><div style="font:600 15px/1.2 'JetBrains Mono',monospace;margin-top:3px;">{{ song.key }}</div></div>
+          <div style="padding:9px 13px;background:rgba(255,255,255,.13);border-radius:11px;"><div style="font:400 10px/1 'DM Sans';color:rgba(255,255,255,.65);">Tempo</div><div style="font:600 15px/1.2 'DM Sans';margin-top:3px;">{{ song.tempo }} bpm</div></div>
+          <div onClick="{{ pitchPipe }}" style="margin-left:auto;align-self:center;display:flex;align-items:center;gap:8px;padding:11px 14px;background:var(--gold);border-radius:12px;cursor:pointer;box-shadow:0 6px 16px -6px rgba(0,0,0,.4);">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h3l3-8 6 16 3-8h3"/></svg>
+            <span style="font:600 13px/1 'DM Sans';color:#fff;">Pitch</span>
+          </div>
+        </div>
+      </div>
+
+      <div style="flex:1;overflow-y:auto;padding:18px 20px 28px;">
+        <!-- Part mixer -->
+        <div style="display:flex;align-items:center;justify-content:space-between;">
+          <div style="font:600 16px/1 'DM Sans';">Parts mixer</div>
+          <div onClick="{{ togglePlay }}" style="display:flex;align-items:center;gap:8px;padding:9px 15px;border-radius:999px;background:{{ playBg }};color:{{ playFg }};border:1px solid var(--line2);cursor:pointer;">
+            <span style="font:600 13px/1 'DM Sans';">{{ playLabel }}</span>
+          </div>
+        </div>
+        <div style="font:400 12px/1.4 'DM Sans';color:var(--ink3);margin-top:6px;">Solo or mute a voice to practice your line.</div>
+        <div style="margin-top:14px;background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:6px 16px;">
+          <sc-for list="{{ partRows }}" as="pt" hint-placeholder-count="4">
+            <div style="display:flex;align-items:center;gap:12px;padding:13px 0;border-bottom:1px solid var(--line);">
+              <span style="width:34px;height:34px;flex:0 0 auto;border-radius:10px;display:flex;align-items:center;justify-content:center;font:600 13px/1 'DM Sans';color:#fff;background:{{ pt.color }};">{{ pt.letter }}</span>
+              <div style="flex:1;min-width:0;">
+                <div style="font:600 13px/1 'DM Sans';">{{ pt.name }}</div>
+                <input type="range" min="0" max="100" value="{{ pt.val }}" onInput="{{ pt.onInput }}" style="width:100%;margin-top:9px;accent-color:#3F3795;height:4px;"/>
+              </div>
+              <div onClick="{{ pt.solo }}" style="width:30px;height:30px;border-radius:8px;display:flex;align-items:center;justify-content:center;font:700 11px/1 'DM Sans';cursor:pointer;background:{{ pt.soloBg }};color:{{ pt.soloFg }};border:1px solid var(--line2);">S</div>
+              <div onClick="{{ pt.mute }}" style="width:30px;height:30px;border-radius:8px;display:flex;align-items:center;justify-content:center;cursor:pointer;background:{{ pt.muteBg }};color:{{ pt.muteFg }};border:1px solid var(--line2);">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5 6 9H2v6h4l5 4z"/><path d="M16 9l5 6M21 9l-5 6"/></svg>
+              </div>
+            </div>
+          </sc-for>
+        </div>
+
+        <!-- Lyric teleprompter -->
+        <div style="display:flex;align-items:center;justify-content:space-between;margin:24px 0 12px;">
+          <div style="font:600 16px/1 'DM Sans';">Lyrics</div>
+          <div style="display:flex;align-items:center;gap:6px;font:500 11px/1 'DM Sans';color:var(--ink3);">
+            <span style="width:7px;height:7px;border-radius:50%;background:{{ scrollDot }};"></span>{{ scrollLabel }}
+          </div>
+        </div>
+        <div ref="{{ setLyricsRef }}" style="height:240px;overflow-y:auto;background:var(--dark);border-radius:20px;padding:26px 24px;color:#EDE7F6;">
+          <div style="white-space:pre-line;font:400 21px/1.7 'Spectral',serif;text-align:center;letter-spacing:.01em;">{{ song.lyrics }}</div>
+          <div style="height:120px;"></div>
+        </div>
+
+        <!-- Parts breakdown -->
+        <sc-if value="{{ songIsComing }}" hint-placeholder-val="{{ true }}">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin:24px 0 12px;">
+          <div style="font:600 16px/1 'DM Sans';">Parts &amp; vocal guides</div>
+          <div onClick="{{ addPart }}" style="display:{{ partsManageShow }};align-items:center;gap:5px;font:600 12px/1 'DM Sans';color:var(--indigo);cursor:pointer;">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>Add part
+          </div>
+        </div>
+        <sc-for list="{{ songParts }}" as="pt" hint-placeholder-count="4">
+          <div style="display:flex;gap:12px;background:var(--surface);border:1px solid var(--line);border-radius:15px;padding:13px 14px;margin-bottom:9px;">
+            <span style="width:32px;height:32px;flex:0 0 auto;border-radius:9px;display:flex;align-items:center;justify-content:center;font:600 13px/1 'DM Sans';color:#fff;background:{{ pt.color }};">{{ pt.letter }}</span>
+            <div style="flex:1;min-width:0;">
+              <div style="display:flex;align-items:center;gap:8px;"><div style="font:600 14px/1 'DM Sans';">{{ pt.name }}</div><span style="font:500 10px/1 'DM Sans';color:{{ pt.stemColor }};">· {{ pt.stemLabel }}</span></div>
+              <div style="font:400 12px/1.45 'DM Sans';color:var(--ink2);margin-top:5px;">{{ pt.notes }}</div>
+              <div style="font:400 11px/1 'DM Sans';color:var(--ink3);margin-top:5px;">Lead: {{ pt.by }}</div>
+            </div>
+          </div>
+        </sc-for>
+        </sc-if>
+
+        <!-- Lead notes / comments -->
+        <div style="font:600 16px/1 'DM Sans';margin:24px 0 12px;">Lead direction</div>
+        <sc-for list="{{ song.notes }}" as="nt" hint-placeholder-count="2">
+          <div style="display:flex;gap:11px;background:var(--gold-soft);border:1px solid #EBDDC0;border-radius:15px;padding:13px 14px;margin-bottom:10px;">
+            <div style="width:30px;height:30px;flex:0 0 auto;border-radius:50%;background:var(--gold);color:#fff;display:flex;align-items:center;justify-content:center;font:600 11px/1 'DM Sans';">{{ nt.initials }}</div>
+            <div style="flex:1;"><div style="font:600 12px/1 'DM Sans';color:var(--gold-d);">{{ nt.who }}</div><div style="font:400 13px/1.5 'DM Sans';color:var(--ink);margin-top:4px;">{{ nt.text }}</div></div>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+    </sc-if>
+
+    <!-- ============ ADD SONG ============ -->
+    <sc-if value="{{ vAddSong }}" hint-placeholder-val="{{ true }}">
+    <div style="flex:1;min-height:0;display:flex;flex-direction:column;background:var(--paper);">
+      <div style="flex:0 0 auto;padding:20px 20px 16px;display:flex;align-items:center;gap:14px;border-bottom:1px solid var(--line);">
+        <div onClick="{{ back }}" style="width:38px;height:38px;border-radius:50%;background:var(--surface);border:1px solid var(--line);display:flex;align-items:center;justify-content:center;cursor:pointer;">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#5E574D" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+        </div>
+        <h1 style="font:600 19px/1 'DM Sans';">Add a song</h1>
+      </div>
+      <div style="flex:1;overflow-y:auto;padding:20px 20px 120px;">
+        <div style="font:500 13px/1 'DM Sans';color:var(--ink2);margin-bottom:7px;">Title</div>
+        <input value="{{ f.title }}" onInput="{{ setTitle }}" placeholder="Song title" style="width:100%;padding:13px 14px;border:1px solid var(--line2);border-radius:12px;font:500 15px/1 'DM Sans';background:var(--surface);outline:none;color:var(--ink);"/>
+        <div style="display:flex;gap:12px;margin-top:16px;">
+          <div style="flex:1;"><div style="font:500 13px/1 'DM Sans';color:var(--ink2);margin-bottom:7px;">Key</div>
+            <div style="display:flex;gap:6px;flex-wrap:wrap;">
+              <sc-for list="{{ keyChips }}" as="k" hint-placeholder-count="6">
+                <div onClick="{{ k.pick }}" style="padding:8px 11px;border-radius:9px;font:600 13px/1 'JetBrains Mono',monospace;cursor:pointer;background:{{ k.bg }};color:{{ k.fg }};border:1px solid {{ k.bd }};">{{ k.label }}</div>
+              </sc-for>
+            </div>
+          </div>
+        </div>
+        <div style="display:flex;gap:12px;margin-top:16px;">
+          <div style="flex:1;"><div style="font:500 13px/1 'DM Sans';color:var(--ink2);margin-bottom:7px;">Tempo (bpm)</div>
+            <input value="{{ f.tempo }}" onInput="{{ setTempo }}" inputmode="numeric" style="width:100%;padding:13px 14px;border:1px solid var(--line2);border-radius:12px;font:500 15px/1 'DM Sans';background:var(--surface);outline:none;"/></div>
+          <div style="flex:1.4;"><div style="font:500 13px/1 'DM Sans';color:var(--ink2);margin-bottom:7px;">Composer</div>
+            <input value="{{ f.composer }}" onInput="{{ setComposer }}" placeholder="e.g. Nathaniel Bassey" style="width:100%;padding:13px 14px;border:1px solid var(--line2);border-radius:12px;font:500 15px/1 'DM Sans';background:var(--surface);outline:none;"/></div>
+        </div>
+        <div style="font:500 13px/1 'DM Sans';color:var(--ink2);margin:16px 0 7px;">Tags</div>
+        <div style="display:flex;gap:7px;flex-wrap:wrap;">
+          <sc-for list="{{ tagChips }}" as="t" hint-placeholder-count="6">
+            <div onClick="{{ t.toggle }}" style="padding:8px 13px;border-radius:999px;font:500 12px/1 'DM Sans';cursor:pointer;background:{{ t.bg }};color:{{ t.fg }};border:1px solid {{ t.bd }};">{{ t.label }}</div>
+          </sc-for>
+        </div>
+        <div style="font:500 13px/1 'DM Sans';color:var(--ink2);margin:18px 0 7px;">Reference audio</div>
+        <div style="border:1.5px dashed var(--line2);border-radius:14px;padding:22px;text-align:center;background:var(--surface2);">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#9A9183" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="margin-bottom:8px;"><path d="M12 16V4M7 9l5-5 5 5"/><path d="M4 16v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg>
+          <div style="font:500 13px/1.4 'DM Sans';color:var(--ink2);">Upload a recording or paste a link</div>
+          <div style="font:400 11px/1.4 'DM Sans';color:var(--ink3);margin-top:4px;">We can auto-transcribe lyrics — you can correct them after.</div>
+        </div>
+        <div style="font:500 13px/1 'DM Sans';color:var(--ink2);margin:18px 0 7px;">Lyrics</div>
+        <textarea value="{{ f.lyrics }}" onInput="{{ setLyrics }}" placeholder="Paste or type lyrics… or auto-generate from the audio." style="width:100%;height:120px;padding:13px 14px;border:1px solid var(--line2);border-radius:12px;font:400 14px/1.6 'DM Sans';background:var(--surface);outline:none;resize:none;color:var(--ink);"></textarea>
+        <div onClick="{{ toggleComing }}" style="display:flex;align-items:center;gap:12px;margin-top:18px;padding:14px;background:var(--surface);border:1px solid var(--line);border-radius:14px;cursor:pointer;">
+          <div style="flex:1;"><div style="font:600 14px/1 'DM Sans';">Coming up for rehearsal</div><div style="font:400 12px/1.4 'DM Sans';color:var(--ink3);margin-top:3px;">Surface on home & add a parts breakdown</div></div>
+          <div style="width:46px;height:27px;border-radius:999px;padding:3px;background:{{ comingTrack }};transition:.2s;"><div style="width:21px;height:21px;border-radius:50%;background:#fff;transform:{{ comingKnob }};transition:.2s;box-shadow:0 1px 3px rgba(0,0,0,.3);"></div></div>
+        </div>
+      </div>
+      <div style="flex:0 0 auto;padding:14px 20px 22px;border-top:1px solid var(--line);background:var(--paper);">
+        <div onClick="{{ saveSong }}" style="padding:15px;text-align:center;background:var(--indigo);color:#fff;border-radius:14px;font:600 15px/1 'DM Sans';cursor:pointer;box-shadow:0 10px 22px -8px rgba(63,55,149,.6);">Save to Song Bank</div>
+      </div>
+    </div>
+    </sc-if>
+
+    <!-- ============ REHEARSE LIST ============ -->
+    <sc-if value="{{ vRehearse }}" hint-placeholder-val="{{ true }}">
+    <div style="flex:1;min-height:0;display:flex;flex-direction:column;background:var(--paper);">
+      <div style="flex:0 0 auto;padding:22px 22px 12px;">
+        <h1 style="font:600 26px/1.1 'Spectral',serif;letter-spacing:-.01em;">Rehearsals</h1>
+      </div>
+      <div style="flex:1;overflow-y:auto;padding:8px 22px 28px;">
+        <div onClick="{{ goRehearsal }}" style="border-radius:22px;padding:20px;background:linear-gradient(155deg,var(--indigo-d),var(--indigo) 70%,var(--indigo-l));color:#fff;position:relative;overflow:hidden;cursor:pointer;box-shadow:0 18px 36px -16px rgba(43,38,112,.6);">
+          <div style="display:flex;align-items:center;gap:8px;font:600 10px/1 'DM Sans';letter-spacing:.16em;text-transform:uppercase;color:rgba(255,255,255,.72);"><span style="width:7px;height:7px;border-radius:50%;background:#7CE0A0;animation:glow 1.8s infinite;"></span>Up next · Tonight</div>
+          <div style="font:500 22px/1.1 'Spectral',serif;margin-top:10px;">{{ tonightTitle }}</div>
+          <div style="font:500 13px/1.4 'DM Sans';color:rgba(255,255,255,.82);margin-top:5px;">{{ tonightWhen }}</div>
+          <div style="display:flex;gap:18px;margin-top:16px;">
+            <div><div style="font:600 18px/1 'DM Sans';">{{ agendaCount }}</div><div style="font:400 11px/1 'DM Sans';color:rgba(255,255,255,.7);margin-top:3px;">agenda items</div></div>
+            <div><div style="font:600 18px/1 'DM Sans';">{{ agendaTotal }}</div><div style="font:400 11px/1 'DM Sans';color:rgba(255,255,255,.7);margin-top:3px;">minutes</div></div>
+            <div><div style="font:600 18px/1 'DM Sans';">{{ memberCount }}</div><div style="font:400 11px/1 'DM Sans';color:rgba(255,255,255,.7);margin-top:3px;">expected</div></div>
+          </div>
+        </div>
+
+        <div style="font:600 11px/1 'DM Sans';letter-spacing:.14em;text-transform:uppercase;color:var(--ink3);margin:24px 0 12px;">Past rehearsals</div>
+        <sc-for list="{{ pastRehearsals }}" as="rh" hint-placeholder-count="3">
+          <div style="display:flex;align-items:center;gap:13px;padding:14px;background:var(--surface);border:1px solid var(--line);border-radius:16px;margin-bottom:10px;">
+            <div style="width:46px;height:46px;flex:0 0 auto;border-radius:13px;background:var(--surface2);border:1px solid var(--line);display:flex;flex-direction:column;align-items:center;justify-content:center;"><div style="font:600 16px/1 'Spectral',serif;color:var(--indigo);">{{ rh.day }}</div><div style="font:600 9px/1 'DM Sans';letter-spacing:.08em;text-transform:uppercase;color:var(--ink3);margin-top:2px;">{{ rh.mon }}</div></div>
+            <div style="flex:1;"><div style="font:600 14px/1.2 'DM Sans';">{{ rh.title }}</div><div style="font:400 12px/1 'DM Sans';color:var(--ink3);margin-top:3px;">{{ rh.place }}</div></div>
+            <div style="text-align:right;"><div style="font:600 14px/1 'DM Sans';color:var(--green);">{{ rh.att }}</div><div style="font:400 10px/1 'DM Sans';color:var(--ink3);margin-top:3px;">attendance</div></div>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+    </sc-if>
+
+    <!-- ============ REHEARSAL DETAIL ============ -->
+    <sc-if value="{{ vRehearsal }}" hint-placeholder-val="{{ true }}">
+    <div style="flex:1;min-height:0;display:flex;flex-direction:column;background:var(--paper);">
+      <div style="flex:0 0 auto;padding:20px 20px 18px;background:var(--surface);border-bottom:1px solid var(--line);">
+        <div style="display:flex;align-items:center;gap:14px;">
+          <div onClick="{{ goRehearse }}" style="width:38px;height:38px;border-radius:50%;background:var(--surface2);border:1px solid var(--line);display:flex;align-items:center;justify-content:center;cursor:pointer;">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#5E574D" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+          </div>
+          <div onClick="{{ goQr }}" style="margin-left:auto;display:flex;align-items:center;gap:8px;padding:10px 14px;border-radius:12px;background:var(--surface2);border:1px solid var(--line2);cursor:pointer;">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#3F3795" stroke-width="1.8"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/></svg>
+            <span style="font:600 12px/1 'DM Sans';color:var(--indigo);">Attendance</span>
+          </div>
+        </div>
+        <h1 style="font:600 23px/1.1 'Spectral',serif;margin-top:16px;">{{ tonightTitle }}</h1>
+        <div style="display:flex;gap:16px;margin-top:10px;">
+          <div style="display:flex;align-items:center;gap:7px;font:500 13px/1 'DM Sans';color:var(--ink2);">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#9A9183" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>{{ tonightTime }}
+          </div>
+          <div style="display:flex;align-items:center;gap:7px;font:500 13px/1 'DM Sans';color:var(--ink2);">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#9A9183" stroke-width="1.8"><path d="M12 21s-7-5.5-7-11a7 7 0 0 1 14 0c0 5.5-7 11-7 11z"/><circle cx="12" cy="10" r="2.5"/></svg>{{ tonightPlace }}
+          </div>
+        </div>
+      </div>
+      <div style="flex:1;overflow-y:auto;padding:18px 20px 120px;">
+        <div style="font:600 16px/1 'DM Sans';margin-bottom:14px;">Agenda</div>
+        <sc-for list="{{ agendaList }}" as="ag" hint-placeholder-count="5">
+          <div style="display:flex;gap:14px;">
+            <div style="display:flex;flex-direction:column;align-items:center;flex:0 0 auto;">
+              <div style="width:30px;height:30px;border-radius:50%;background:{{ ag.dotBg }};color:{{ ag.dotFg }};display:flex;align-items:center;justify-content:center;font:600 12px/1 'DM Sans';border:2px solid var(--paper);box-shadow:0 0 0 1px var(--line2);">{{ ag.num }}</div>
+              <div style="flex:1;width:2px;background:var(--line2);margin:4px 0;"></div>
+            </div>
+            <div style="flex:1;padding-bottom:16px;">
+              <div style="background:var(--surface);border:1px solid var(--line);border-radius:15px;padding:14px;">
+                <div style="display:flex;align-items:center;justify-content:space-between;">
+                  <div style="font:600 14px/1.2 'DM Sans';">{{ ag.name }}</div>
+                  <span style="font:600 12px/1 'JetBrains Mono',monospace;color:var(--indigo);padding:4px 8px;border-radius:7px;background:var(--indigo-soft);">{{ ag.mins }}m</span>
+                </div>
+                <div style="display:flex;align-items:center;gap:7px;margin-top:9px;">
+                  <div style="width:22px;height:22px;border-radius:50%;background:{{ ag.ownerBg }};color:{{ ag.ownerFg }};display:flex;align-items:center;justify-content:center;font:600 9px/1 'DM Sans';">{{ ag.ownerInit }}</div>
+                  <span style="font:500 12px/1 'DM Sans';color:var(--ink2);">{{ ag.owner }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </sc-for>
+      </div>
+      <div style="flex:0 0 auto;padding:14px 20px 22px;border-top:1px solid var(--line);background:var(--paper);">
+        <div onClick="{{ startLive }}" style="padding:16px;text-align:center;background:linear-gradient(135deg,var(--indigo),var(--indigo-l));color:#fff;border-radius:15px;font:600 16px/1 'DM Sans';cursor:pointer;display:flex;align-items:center;justify-content:center;gap:9px;box-shadow:0 12px 26px -8px rgba(63,55,149,.6);">
+          <svg width="19" height="19" viewBox="0 0 24 24" fill="#fff"><path d="M8 5v14l11-7z"/></svg>Start rehearsal mode
+        </div>
+      </div>
+    </div>
+    </sc-if>
+
+    <!-- ============ QR ATTENDANCE ============ -->
+    <sc-if value="{{ vQr }}" hint-placeholder-val="{{ true }}">
+    <div style="flex:1;min-height:0;display:flex;flex-direction:column;background:linear-gradient(180deg,var(--dark),var(--dark2));color:#fff;">
+      <div style="flex:0 0 auto;padding:20px 20px 8px;display:flex;align-items:center;gap:14px;">
+        <div onClick="{{ back }}" style="width:38px;height:38px;border-radius:50%;background:rgba(255,255,255,.12);display:flex;align-items:center;justify-content:center;cursor:pointer;">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
+        </div>
+        <div style="font:600 15px/1 'DM Sans';">Sign-in</div>
+      </div>
+      <div style="flex:1;overflow-y:auto;padding:10px 24px 30px;display:flex;flex-direction:column;align-items:center;">
+        <div style="font:500 13px/1.4 'DM Sans';color:rgba(255,255,255,.7);text-align:center;margin-bottom:18px;">Choristers scan to sign in.<br/>Code rotates automatically.</div>
+        <div style="background:#fff;border-radius:24px;padding:18px;box-shadow:0 24px 50px -16px rgba(0,0,0,.6);">
+          <div style="width:230px;height:230px;display:grid;grid-template-columns:repeat(21,1fr);grid-template-rows:repeat(21,1fr);">
+            <sc-for list="{{ qrCells }}" as="c" hint-placeholder-count="60">
+              <div style="background:{{ c.bg }};border-radius:1px;"></div>
+            </sc-for>
+          </div>
+        </div>
+        <div style="margin-top:20px;text-align:center;">
+          <div style="font:600 10px/1 'DM Sans';letter-spacing:.18em;text-transform:uppercase;color:rgba(255,255,255,.55);">Manual code</div>
+          <div style="font:600 34px/1 'JetBrains Mono',monospace;letter-spacing:.14em;margin-top:8px;color:var(--gold);">{{ qrCode }}</div>
+          <div style="display:flex;align-items:center;justify-content:center;gap:8px;margin-top:12px;font:500 12px/1 'DM Sans';color:rgba(255,255,255,.65);">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="animation:spin 4s linear infinite;"><path d="M21 12a9 9 0 1 1-6.2-8.5"/><path d="M21 4v5h-5"/></svg>Refreshes in {{ qrLeft }}s
+          </div>
+        </div>
+        <div style="width:100%;margin-top:26px;">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+            <div style="font:600 14px/1 'DM Sans';">Signed in</div>
+            <div style="font:600 13px/1 'DM Sans';color:#7CE0A0;">{{ signedCount }} / {{ memberCount }}</div>
+          </div>
+          <sc-for list="{{ signins }}" as="si" hint-placeholder-count="3">
+            <div style="display:flex;align-items:center;gap:11px;padding:11px 13px;background:rgba(255,255,255,.07);border-radius:13px;margin-bottom:8px;animation:slideIn .35s ease;">
+              <div style="width:32px;height:32px;border-radius:50%;background:{{ si.color }};display:flex;align-items:center;justify-content:center;font:600 12px/1 'DM Sans';color:#fff;">{{ si.initials }}</div>
+              <div style="flex:1;"><div style="font:600 13px/1 'DM Sans';">{{ si.name }}</div><div style="font:400 11px/1 'DM Sans';color:rgba(255,255,255,.5);margin-top:2px;">{{ si.part }}</div></div>
+              <span style="font:600 11px/1 'DM Sans';padding:5px 9px;border-radius:8px;background:{{ si.tagBg }};color:{{ si.tagFg }};">{{ si.status }}</span>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+    </div>
+    </sc-if>
+
+    <!-- ============ LIVE REHEARSAL MODE (HERO) ============ -->
+    <sc-if value="{{ vLive }}" hint-placeholder-val="{{ true }}">
+    <div style="flex:1;min-height:0;display:flex;flex-direction:column;background:{{ liveBg }};color:#fff;">
+      <div style="flex:0 0 auto;padding:18px 22px 6px;display:flex;align-items:center;">
+        <div onClick="{{ exitLive }}" style="display:flex;align-items:center;gap:7px;font:600 13px/1 'DM Sans';color:rgba(255,255,255,.7);cursor:pointer;">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>End
+        </div>
+        <div style="margin-left:auto;display:flex;align-items:center;gap:7px;font:600 11px/1 'DM Sans';letter-spacing:.14em;text-transform:uppercase;color:rgba(255,255,255,.55);"><span style="width:7px;height:7px;border-radius:50%;background:#FF6B5E;animation:glow 1.4s infinite;"></span>Live</div>
+      </div>
+
+      <!-- segment progress -->
+      <div style="flex:0 0 auto;padding:14px 22px 0;display:flex;gap:5px;">
+        <sc-for list="{{ liveSegs }}" as="sg" hint-placeholder-count="5">
+          <div style="flex:1;height:4px;border-radius:4px;background:{{ sg.bg }};"></div>
+        </sc-for>
+      </div>
+
+      <div style="flex:1;display:flex;flex-direction:column;justify-content:center;align-items:center;padding:24px 28px;text-align:center;">
+        <div style="font:600 11px/1 'DM Sans';letter-spacing:.18em;text-transform:uppercase;color:rgba(255,255,255,.55);">{{ liveStepLabel }}</div>
+        <h1 style="font:500 34px/1.1 'Spectral',serif;margin-top:14px;">{{ liveName }}</h1>
+        <div style="display:flex;align-items:center;gap:9px;margin-top:14px;">
+          <div style="width:26px;height:26px;border-radius:50%;background:{{ liveOwnerBg }};display:flex;align-items:center;justify-content:center;font:600 10px/1 'DM Sans';color:#fff;">{{ liveOwnerInit }}</div>
+          <span style="font:500 14px/1 'DM Sans';color:rgba(255,255,255,.85);">{{ liveOwner }}</span>
+        </div>
+
+        <!-- timer ring -->
+        <div style="position:relative;width:240px;height:240px;margin:34px 0;">
+          <div style="position:absolute;inset:0;border-radius:50%;background:{{ liveRing }};"></div>
+          <div style="position:absolute;inset:10px;border-radius:50%;background:{{ liveBg }};display:flex;flex-direction:column;align-items:center;justify-content:center;">
+            <div style="font:600 56px/1 'JetBrains Mono',monospace;letter-spacing:-.02em;color:{{ liveTimeColor }};">{{ liveTime }}</div>
+            <div style="font:500 13px/1 'DM Sans';color:rgba(255,255,255,.55);margin-top:8px;">{{ liveSubLabel }}</div>
+          </div>
+        </div>
+
+        <div style="font:400 13px/1.4 'DM Sans';color:rgba(255,255,255,.5);">Up next</div>
+        <div style="font:500 16px/1.3 'Spectral',serif;color:rgba(255,255,255,.85);margin-top:4px;">{{ liveNext }}</div>
+      </div>
+
+      <div style="flex:0 0 auto;padding:18px 28px 34px;display:flex;align-items:center;justify-content:center;gap:18px;">
+        <div onClick="{{ prevItem }}" style="width:56px;height:56px;border-radius:50%;background:rgba(255,255,255,.1);display:flex;align-items:center;justify-content:center;cursor:pointer;">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="#fff"><path d="M6 6h2v12H6zM20 6l-9 6 9 6z"/></svg>
+        </div>
+        <div onClick="{{ toggleLive }}" style="width:78px;height:78px;border-radius:50%;background:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 14px 30px -8px rgba(0,0,0,.5);">
+          <sc-if value="{{ liveRunning }}" hint-placeholder-val="{{ true }}">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="#1B1740"><rect x="6" y="5" width="4" height="14" rx="1"/><rect x="14" y="5" width="4" height="14" rx="1"/></svg>
+          </sc-if>
+          <sc-if value="{{ livePaused }}" hint-placeholder-val="{{ true }}">
+            <svg width="30" height="30" viewBox="0 0 24 24" fill="#1B1740"><path d="M8 5v14l11-7z"/></svg>
+          </sc-if>
+        </div>
+        <div onClick="{{ nextItem }}" style="width:56px;height:56px;border-radius:50%;background:rgba(255,255,255,.1);display:flex;align-items:center;justify-content:center;cursor:pointer;">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="#fff"><path d="M16 6h2v12h-2zM4 6l9 6-9 6z"/></svg>
+        </div>
+      </div>
+    </div>
+    </sc-if>
+
+    <!-- ============ SERVICE CHECKLIST ============ -->
+    <sc-if value="{{ vService }}" hint-placeholder-val="{{ true }}">
+    <div style="flex:1;min-height:0;display:flex;flex-direction:column;background:var(--paper);">
+      <div style="flex:0 0 auto;padding:22px 22px 16px;background:linear-gradient(160deg,var(--gold-d),var(--gold));color:#fff;position:relative;overflow:hidden;">
+        <div style="position:absolute;right:-24px;top:-30px;opacity:.5;"><svg viewBox="0 0 30 30" width="150" height="150" fill="none"><rect x="11" y="0" width="8" height="8" rx="1.2" transform="rotate(45 15 4)" fill="#fff" opacity="0.2"></rect><rect x="0" y="11" width="8" height="8" rx="1.2" transform="rotate(45 4 15)" fill="#fff" opacity="0.12"></rect><rect x="22" y="11" width="8" height="8" rx="1.2" transform="rotate(45 26 15)" fill="#fff" opacity="0.12"></rect></svg></div>
+        <div style="font:600 10px/1 'DM Sans';letter-spacing:.16em;text-transform:uppercase;color:rgba(255,255,255,.78);">Sunday service</div>
+        <h1 style="font:500 26px/1.1 'Spectral',serif;margin-top:8px;">{{ serviceTitle }}</h1>
+        <div style="display:flex;gap:16px;margin-top:14px;">
+          <div><div style="font:600 17px/1 'DM Sans';">{{ callTime }}</div><div style="font:400 11px/1 'DM Sans';color:rgba(255,255,255,.78);margin-top:3px;">Call time</div></div>
+          <div><div style="font:600 17px/1 'DM Sans';">{{ serviceTime }}</div><div style="font:400 11px/1 'DM Sans';color:rgba(255,255,255,.78);margin-top:3px;">Service</div></div>
+          <div style="margin-left:auto;text-align:right;"><div style="font:600 17px/1 'DM Sans';">{{ checkDoneLabel }}</div><div style="font:400 11px/1 'DM Sans';color:rgba(255,255,255,.78);margin-top:3px;">ready</div></div>
+        </div>
+      </div>
+      <div style="flex:1;overflow-y:auto;padding:18px 22px 28px;">
+        <!-- P&W arrangement -->
+        <div onClick="{{ goPw }}" style="background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:16px;cursor:pointer;box-shadow:0 2px 8px -4px rgba(40,28,70,.12);">
+          <div style="display:flex;align-items:center;gap:10px;">
+            <div style="width:38px;height:38px;border-radius:11px;background:var(--indigo-soft);display:flex;align-items:center;justify-content:center;">
+              <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#3F3795" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V6l10-2v12"/><circle cx="6.5" cy="18" r="2.5"/><circle cx="16.5" cy="16" r="2.5"/></svg>
+            </div>
+            <div style="flex:1;"><div style="font:600 14px/1.2 'DM Sans';">{{ pwName }}</div><div style="font:400 12px/1 'DM Sans';color:var(--ink3);margin-top:3px;">{{ pwMeta }}</div></div>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#9A9183" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
+          </div>
+        </div>
+
+        <!-- Song order -->
+        <div style="font:600 16px/1 'DM Sans';margin:24px 0 12px;">Song order</div>
+        <div style="background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:6px 16px;">
+          <sc-for list="{{ songOrder }}" as="so" hint-placeholder-count="4">
+            <div style="display:flex;align-items:center;gap:13px;padding:13px 0;border-bottom:1px solid var(--line);">
+              <span style="font:600 14px/1 'Spectral',serif;color:var(--gold-d);width:18px;">{{ so.num }}</span>
+              <div style="flex:1;"><div style="font:600 14px/1.2 'DM Sans';">{{ so.title }}</div><div style="font:400 11px/1 'DM Sans';color:var(--ink3);margin-top:2px;">{{ so.lead }}</div></div>
+              <span style="font:600 11px/1 'JetBrains Mono',monospace;color:var(--ink2);">{{ so.key }}</span>
+            </div>
+          </sc-for>
+        </div>
+
+        <!-- Duty roster -->
+        <div style="font:600 16px/1 'DM Sans';margin:24px 0 12px;">On duty</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+          <sc-for list="{{ duties }}" as="dt" hint-placeholder-count="4">
+            <div style="background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:13px;">
+              <div style="font:600 10px/1 'DM Sans';letter-spacing:.1em;text-transform:uppercase;color:var(--ink3);">{{ dt.role }}</div>
+              <div style="font:600 14px/1.3 'DM Sans';margin-top:7px;">{{ dt.who }}</div>
+              <div onClick="{{ dt.assign }}" style="display:{{ dt.assignShow }};align-items:center;gap:5px;margin-top:9px;font:600 11px/1 'DM Sans';color:var(--indigo);cursor:pointer;">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>Assign
+              </div>
+            </div>
+          </sc-for>
+        </div>
+
+        <!-- Checklist -->
+        <div style="font:600 16px/1 'DM Sans';margin:24px 0 12px;">Before we go on</div>
+        <div style="background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:6px 16px;">
+          <sc-for list="{{ checklist }}" as="ck" hint-placeholder-count="5">
+            <div onClick="{{ ck.toggle }}" style="display:flex;align-items:center;gap:13px;padding:14px 0;border-bottom:1px solid var(--line);cursor:pointer;">
+              <div style="width:24px;height:24px;flex:0 0 auto;border-radius:8px;display:flex;align-items:center;justify-content:center;background:{{ ck.boxBg }};border:1.6px solid {{ ck.boxBd }};">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="opacity:{{ ck.tickOpacity }};"><path d="M20 6 9 17l-5-5"/></svg>
+              </div>
+              <span style="flex:1;font:500 14px/1.3 'DM Sans';color:{{ ck.textColor }};text-decoration:{{ ck.deco }};">{{ ck.label }}</span>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+    </div>
+    </sc-if>
+
+    <!-- ============ P&W ARRANGEMENT ============ -->
+    <sc-if value="{{ vPw }}" hint-placeholder-val="{{ true }}">
+    <div style="flex:1;min-height:0;display:flex;flex-direction:column;background:var(--paper);">
+      <div style="flex:0 0 auto;padding:20px 20px 18px;display:flex;align-items:center;gap:14px;border-bottom:1px solid var(--line);">
+        <div onClick="{{ goService }}" style="width:38px;height:38px;border-radius:50%;background:var(--surface);border:1px solid var(--line);display:flex;align-items:center;justify-content:center;cursor:pointer;">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#5E574D" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+        </div>
+        <div><div style="font:600 18px/1.1 'DM Sans';">{{ pwName }}</div><div style="font:400 12px/1 'DM Sans';color:var(--ink3);margin-top:3px;">Praise &amp; Worship arrangement</div></div>
+      </div>
+      <div style="flex:1;overflow-y:auto;padding:18px 20px 120px;">
+        <div style="display:flex;align-items:center;gap:12px;padding:14px;background:var(--surface);border:1px solid var(--line);border-radius:16px;margin-bottom:16px;">
+          <div style="width:38px;height:38px;border-radius:50%;background:var(--indigo);color:#fff;display:flex;align-items:center;justify-content:center;font:600 13px/1 'DM Sans';">{{ pwLeadInitials }}</div>
+          <div style="flex:1;"><div style="font:600 10px/1 'DM Sans';letter-spacing:.1em;text-transform:uppercase;color:var(--ink3);">Praise lead</div><div style="font:600 14px/1.2 'DM Sans';margin-top:5px;">{{ pwLeadName }}</div></div>
+          <div onClick="{{ assignPwLead }}" style="display:{{ pwActionShow }};align-items:center;padding:9px 13px;border-radius:11px;background:var(--indigo-soft);color:var(--indigo-d);font:600 12px/1 'DM Sans';cursor:pointer;">Change</div>
+        </div>
+        <div style="font:600 11px/1 'DM Sans';letter-spacing:.14em;text-transform:uppercase;color:var(--ink3);margin-bottom:12px;">Medley · drag to reorder</div>
+        <sc-for list="{{ pwSongs }}" as="ps" hint-placeholder-count="3">
+          <div style="display:flex;align-items:center;gap:13px;padding:15px;background:var(--surface);border:1px solid var(--line);border-radius:16px;margin-bottom:11px;box-shadow:0 2px 8px -4px rgba(40,28,70,.1);">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#C9C0AE" stroke-width="2" stroke-linecap="round"><circle cx="9" cy="6" r="1"/><circle cx="15" cy="6" r="1"/><circle cx="9" cy="12" r="1"/><circle cx="15" cy="12" r="1"/><circle cx="9" cy="18" r="1"/><circle cx="15" cy="18" r="1"/></svg>
+            <span style="font:600 16px/1 'Spectral',serif;color:var(--indigo);">{{ ps.num }}</span>
+            <div style="flex:1;"><div style="font:600 14px/1.2 'DM Sans';">{{ ps.title }}</div><div style="font:400 12px/1 'DM Sans';color:var(--ink3);margin-top:3px;">{{ ps.transition }}</div></div>
+            <span style="font:600 11px/1 'JetBrains Mono',monospace;padding:5px 8px;border-radius:7px;background:var(--indigo-soft);color:var(--indigo-d);">{{ ps.key }}</span>
+          </div>
+        </sc-for>
+
+        <div style="font:600 11px/1 'DM Sans';letter-spacing:.14em;text-transform:uppercase;color:var(--gold-d);margin:22px 0 12px;">Praise loops</div>
+        <div style="display:flex;gap:9px;flex-wrap:wrap;">
+          <sc-for list="{{ pwLoops }}" as="lp" hint-placeholder-count="3">
+            <div style="display:flex;align-items:center;gap:8px;padding:11px 14px;background:var(--gold-soft);border:1px solid #EBDDC0;border-radius:13px;">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#8E681F" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M17 2l4 4-4 4"/><path d="M3 11V9a4 4 0 0 1 4-4h14M7 22l-4-4 4-4"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>
+              <div><div style="font:600 13px/1 'DM Sans';color:var(--ink);">{{ lp.name }}</div><div style="font:400 11px/1 'DM Sans';color:var(--gold-d);margin-top:3px;">{{ lp.detail }}</div></div>
+            </div>
+          </sc-for>
+        </div>
+
+        <div style="margin-top:24px;padding:16px;background:var(--indigo-soft);border-radius:16px;display:flex;align-items:center;gap:12px;">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#3F3795" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v18M5 8l7-5 7 5"/></svg>
+          <div style="flex:1;font:500 13px/1.4 'DM Sans';color:var(--indigo-d);">Reusable arrangement — drop into any service.</div>
+        </div>
+      </div>
+    </div>
+    </sc-if>
+
+    <!-- ============ MORE ============ -->
+    <sc-if value="{{ vMore }}" hint-placeholder-val="{{ true }}">
+    <div style="flex:1;min-height:0;display:flex;flex-direction:column;background:var(--paper);">
+      <div style="flex:0 0 auto;padding:22px 22px 12px;"><h1 style="font:600 26px/1.1 'Spectral',serif;letter-spacing:-.01em;">More</h1></div>
+      <div style="flex:1;overflow-y:auto;padding:8px 22px 28px;">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+          <sc-for list="{{ moreTiles }}" as="mt" hint-placeholder-count="6">
+            <div onClick="{{ mt.go }}" style="background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:17px;cursor:pointer;">
+              <div style="width:42px;height:42px;border-radius:13px;background:{{ mt.iconBg }};display:flex;align-items:center;justify-content:center;margin-bottom:13px;">{{ mt.icon }}</div>
+              <div style="font:600 14px/1.2 'DM Sans';">{{ mt.title }}</div>
+              <div style="font:400 11px/1.4 'DM Sans';color:var(--ink3);margin-top:5px;">{{ mt.sub }}</div>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+    </div>
+    </sc-if>
+
+    <!-- ============ MEMBERS ============ -->
+    <sc-if value="{{ vMembers }}" hint-placeholder-val="{{ true }}">
+    <div style="flex:1;min-height:0;display:flex;flex-direction:column;background:var(--paper);">
+      <div style="flex:0 0 auto;padding:20px 20px 16px;display:flex;align-items:center;gap:14px;border-bottom:1px solid var(--line);">
+        <div onClick="{{ goMore }}" style="width:38px;height:38px;border-radius:50%;background:var(--surface);border:1px solid var(--line);display:flex;align-items:center;justify-content:center;cursor:pointer;">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#5E574D" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+        </div>
+        <h1 style="flex:1;font:600 19px/1 'DM Sans';">Members · {{ memberCount }}</h1>
+        <div onClick="{{ addMember }}" style="display:{{ memberManageShow }};align-items:center;gap:6px;padding:9px 13px;border-radius:11px;background:var(--indigo);color:#fff;cursor:pointer;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+          <span style="font:600 12px/1 'DM Sans';">Add</span>
+        </div>
+      </div>
+      <div style="flex:1;overflow-y:auto;padding:14px 20px 28px;">
+        <sc-for list="{{ memberGroups }}" as="grp" hint-placeholder-count="4">
+          <div style="margin-bottom:18px;">
+            <div style="display:flex;align-items:center;gap:8px;font:600 11px/1 'DM Sans';letter-spacing:.14em;text-transform:uppercase;color:var(--ink3);margin-bottom:11px;"><span style="width:8px;height:8px;border-radius:2px;background:{{ grp.color }};"></span>{{ grp.name }} · {{ grp.count }}</div>
+            <sc-for list="{{ grp.members }}" as="m" hint-placeholder-count="3">
+              <div style="display:flex;align-items:center;gap:12px;padding:11px 0;border-bottom:1px solid var(--line);">
+                <div style="width:38px;height:38px;border-radius:50%;background:{{ m.color }};display:flex;align-items:center;justify-content:center;font:600 13px/1 'DM Sans';color:#fff;">{{ m.initials }}</div>
+                <div style="flex:1;"><div style="font:600 14px/1.2 'DM Sans';">{{ m.name }}</div><div style="font:400 12px/1 'DM Sans';color:var(--ink3);margin-top:2px;">{{ m.role }}</div></div>
+                <span style="font:500 11px/1 'DM Sans';padding:5px 10px;border-radius:999px;background:{{ m.availBg }};color:{{ m.availFg }};">{{ m.avail }}</span>
+                <div onClick="{{ m.manage }}" style="display:{{ m.manageShow }};width:30px;height:30px;border-radius:8px;align-items:center;justify-content:center;background:var(--surface);border:1px solid var(--line2);cursor:pointer;flex:0 0 auto;">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="#9A9183"><circle cx="12" cy="5" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="12" cy="19" r="1.6"/></svg>
+                </div>
+              </div>
+            </sc-for>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+    </sc-if>
+
+    <!-- ============ NOTICEBOARD ============ -->
+    <sc-if value="{{ vBoard }}" hint-placeholder-val="{{ true }}">
+    <div style="flex:1;min-height:0;display:flex;flex-direction:column;background:var(--paper);">
+      <div style="flex:0 0 auto;padding:20px 20px 16px;display:flex;align-items:center;gap:14px;border-bottom:1px solid var(--line);">
+        <div onClick="{{ goMore }}" style="width:38px;height:38px;border-radius:50%;background:var(--surface);border:1px solid var(--line);display:flex;align-items:center;justify-content:center;cursor:pointer;">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#5E574D" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+        </div>
+        <h1 style="flex:1;font:600 19px/1 'DM Sans';">Noticeboard</h1>
+        <div onClick="{{ newAnnounce }}" style="display:{{ announceShow }};align-items:center;gap:6px;padding:9px 13px;border-radius:11px;background:var(--indigo);color:#fff;cursor:pointer;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+          <span style="font:600 12px/1 'DM Sans';">New</span>
+        </div>
+      </div>
+      <div style="flex:1;overflow-y:auto;padding:16px 20px 28px;">
+        <sc-for list="{{ notices }}" as="nt" hint-placeholder-count="3">
+          <div style="background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:16px;margin-bottom:12px;box-shadow:0 2px 8px -4px rgba(40,28,70,.1);">
+            <div style="display:flex;align-items:center;gap:10px;">
+              <div style="width:34px;height:34px;border-radius:50%;background:{{ nt.color }};color:#fff;display:flex;align-items:center;justify-content:center;font:600 12px/1 'DM Sans';">{{ nt.initials }}</div>
+              <div style="flex:1;"><div style="font:600 13px/1.1 'DM Sans';">{{ nt.who }}</div><div style="font:400 11px/1 'DM Sans';color:var(--ink3);margin-top:2px;">{{ nt.role }}</div></div>
+              <div style="font:400 11px/1 'DM Sans';color:var(--ink3);">{{ nt.time }}</div>
+            </div>
+            <div style="display:flex;align-items:center;gap:7px;margin-top:11px;">
+              <span style="display:{{ nt.pinShow }};align-items:center;gap:4px;font:600 9px/1 'DM Sans';letter-spacing:.08em;padding:4px 8px;border-radius:6px;background:var(--gold-soft);color:var(--gold-d);">📌 PINNED</span>
+              <span style="font:500 10px/1 'DM Sans';padding:4px 8px;border-radius:6px;background:var(--indigo-soft);color:var(--indigo-d);">{{ nt.audience }}</span>
+            </div>
+            <div style="font:600 15px/1.3 'Spectral',serif;margin-top:10px;">{{ nt.title }}</div>
+            <div style="font:400 13px/1.55 'DM Sans';color:var(--ink2);margin-top:7px;">{{ nt.body }}</div>
+            <div style="display:flex;gap:18px;margin-top:13px;padding-top:13px;border-top:1px solid var(--line);">
+              <div style="display:flex;align-items:center;gap:6px;font:500 12px/1 'DM Sans';color:var(--ink3);">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l8.8 8.8 8.8-8.8a5.5 5.5 0 0 0 0-7.8z"/></svg>{{ nt.likes }}
+              </div>
+              <div style="display:flex;align-items:center;gap:6px;font:500 12px/1 'DM Sans';color:var(--ink3);">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>{{ nt.comments }}
+              </div>
+            </div>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+    </sc-if>
+
+    <!-- ============ UNIFORM TRY-ON ============ -->
+    <sc-if value="{{ vUniform }}" hint-placeholder-val="{{ true }}">
+    <div style="flex:1;min-height:0;display:flex;flex-direction:column;background:var(--paper);">
+      <div style="flex:0 0 auto;padding:20px 20px 14px;display:flex;align-items:center;gap:14px;">
+        <div onClick="{{ goMore }}" style="width:38px;height:38px;border-radius:50%;background:var(--surface);border:1px solid var(--line);display:flex;align-items:center;justify-content:center;cursor:pointer;">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#5E574D" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+        </div>
+        <h1 style="font:600 19px/1 'DM Sans';">Uniform try-on</h1>
+      </div>
+      <div style="flex:1;overflow-y:auto;padding:6px 20px 28px;">
+        <!-- stage -->
+        <div style="border-radius:22px;background:linear-gradient(180deg,var(--indigo-soft),#F3EEFB);border:1px solid #E3DEF4;padding:18px;display:flex;justify-content:center;gap:14px;">
+          <sc-for list="{{ avatars }}" as="av" hint-placeholder-count="3">
+            <svg viewBox="0 0 120 220" width="92" height="170" style="animation:breathe {{ av.dur }} ease-in-out infinite;">
+              <ellipse cx="60" cy="210" rx="34" ry="7" fill="rgba(43,38,112,.12)"/>
+              <path d="M30 210 Q26 150 34 120 L86 120 Q94 150 90 210 Z" fill="{{ bottomColor }}"/>
+              <path d="M{{ av.shL }} 96 Q60 80 {{ av.shR }} 96 L96 150 Q60 168 24 150 Z" fill="{{ topColor }}"/>
+              <path d="M{{ av.shL }} 100 L60 150 L{{ av.shR }} 100 L60 116 Z" fill="{{ accentColor }}" opacity="0.92"/>
+              <rect x="53" y="74" width="14" height="20" rx="6" fill="{{ av.skin }}"/>
+              <circle cx="60" cy="56" r="22" fill="{{ av.skin }}"/>
+              <path d="M40 52 Q60 30 80 52 Q80 40 60 36 Q40 40 40 52 Z" fill="{{ av.hair }}"/>
+            </svg>
+          </sc-for>
+        </div>
+        <div style="text-align:center;font:400 12px/1.4 'DM Sans';color:var(--ink3);margin-top:10px;">Same look across skin tones &amp; builds</div>
+
+        <!-- controls -->
+        <div style="font:600 13px/1 'DM Sans';margin:20px 0 10px;">Top</div>
+        <div style="display:flex;gap:9px;">
+          <sc-for list="{{ topOpts }}" as="o" hint-placeholder-count="4">
+            <div onClick="{{ o.pick }}" style="flex:1;text-align:center;cursor:pointer;">
+              <div style="height:44px;border-radius:12px;background:{{ o.color }};border:2px solid {{ o.bd }};box-shadow:{{ o.shadow }};"></div>
+              <div style="font:500 10px/1.2 'DM Sans';color:var(--ink2);margin-top:6px;">{{ o.name }}</div>
+            </div>
+          </sc-for>
+        </div>
+
+        <div style="font:600 13px/1 'DM Sans';margin:18px 0 10px;">Sash / accent</div>
+        <div style="display:flex;gap:11px;">
+          <sc-for list="{{ accentOpts }}" as="o" hint-placeholder-count="4">
+            <div onClick="{{ o.pick }}" style="width:42px;height:42px;border-radius:50%;background:{{ o.color }};cursor:pointer;border:3px solid {{ o.bd }};box-shadow:0 2px 6px -2px rgba(0,0,0,.25);"></div>
+          </sc-for>
+        </div>
+
+        <div style="font:600 13px/1 'DM Sans';margin:18px 0 10px;">Skin tone</div>
+        <div style="display:flex;gap:11px;">
+          <sc-for list="{{ skinOpts }}" as="o" hint-placeholder-count="5">
+            <div onClick="{{ o.pick }}" style="width:38px;height:38px;border-radius:50%;background:{{ o.color }};cursor:pointer;border:3px solid {{ o.bd }};"></div>
+          </sc-for>
+        </div>
+
+        <div style="font:600 13px/1 'DM Sans';margin:18px 0 10px;">Build</div>
+        <div style="display:flex;gap:9px;">
+          <sc-for list="{{ bodyOpts }}" as="o" hint-placeholder-count="3">
+            <div onClick="{{ o.pick }}" style="flex:1;text-align:center;padding:11px;border-radius:12px;cursor:pointer;font:500 12px/1 'DM Sans';background:{{ o.bg }};color:{{ o.fg }};border:1px solid {{ o.bd }};">{{ o.name }}</div>
+          </sc-for>
+        </div>
+
+        <!-- vote -->
+        <div style="font:600 16px/1 'DM Sans';margin:24px 0 12px;">Vote on saved looks</div>
+        <sc-for list="{{ looks }}" as="lk" hint-placeholder-count="3">
+          <div style="display:flex;align-items:center;gap:14px;padding:13px;background:var(--surface);border:1px solid var(--line);border-radius:16px;margin-bottom:10px;">
+            <div style="width:54px;height:64px;border-radius:10px;background:linear-gradient(180deg,var(--indigo-soft),#F3EEFB);display:flex;align-items:flex-end;justify-content:center;overflow:hidden;">
+              <svg viewBox="0 0 120 180" width="40" height="60"><path d="M30 180 Q26 130 34 108 L86 108 Q94 130 90 180 Z" fill="{{ lk.bottom }}"/><path d="M36 88 Q60 74 84 88 L94 130 Q60 146 26 130 Z" fill="{{ lk.top }}"/><path d="M36 92 L60 130 L84 92 L60 106 Z" fill="{{ lk.accent }}"/><circle cx="60" cy="52" r="20" fill="{{ lk.skin }}"/></svg>
+            </div>
+            <div style="flex:1;"><div style="font:600 14px/1.2 'DM Sans';">{{ lk.name }}</div><div style="font:400 12px/1 'DM Sans';color:var(--ink3);margin-top:4px;">{{ lk.votes }} votes</div>
+              <div style="margin-top:8px;height:6px;border-radius:6px;background:var(--line);overflow:hidden;"><div style="height:100%;background:var(--gold);border-radius:6px;width:{{ lk.pct }};"></div></div>
+            </div>
+            <div onClick="{{ lk.vote }}" style="padding:9px 14px;border-radius:11px;font:600 12px/1 'DM Sans';cursor:pointer;background:{{ lk.btnBg }};color:{{ lk.btnFg }};border:1px solid {{ lk.btnBd }};">{{ lk.btnLabel }}</div>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+    </sc-if>
+
+    <!-- ============ MINISTRATION ============ -->
+    <sc-if value="{{ vMinistration }}" hint-placeholder-val="{{ true }}">
+    <div style="flex:1;min-height:0;display:flex;flex-direction:column;background:var(--paper);">
+      <div style="flex:0 0 auto;padding:20px 20px 16px;display:flex;align-items:center;gap:14px;border-bottom:1px solid var(--line);">
+        <div onClick="{{ goMore }}" style="width:38px;height:38px;border-radius:50%;background:var(--surface);border:1px solid var(--line);display:flex;align-items:center;justify-content:center;cursor:pointer;">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#5E574D" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+        </div>
+        <h1 style="flex:1;font:600 19px/1 'DM Sans';">Ministration</h1>
+        <div onClick="{{ newMinistration }}" style="display:{{ ministrationNewShow }};align-items:center;gap:6px;padding:9px 13px;border-radius:11px;background:var(--indigo);color:#fff;cursor:pointer;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+          <span style="font:600 12px/1 'DM Sans';">New</span>
+        </div>
+      </div>
+      <div style="flex:1;overflow-y:auto;padding:16px 20px 28px;">
+        <div style="font:400 13px/1.5 'DM Sans';color:var(--ink3);margin-bottom:16px;">Final arrangements — a medley, rehearsal recordings and lyrics, packaged as one viewable item. Same builder as Praise &amp; Worship.</div>
+        <sc-for list="{{ ministrations }}" as="mn" hint-placeholder-count="2">
+          <div style="display:flex;align-items:center;gap:13px;padding:16px;background:var(--surface);border:1px solid var(--line);border-radius:18px;margin-bottom:11px;box-shadow:0 2px 8px -4px rgba(40,28,70,.1);">
+            <div style="width:46px;height:46px;flex:0 0 auto;border-radius:13px;background:var(--indigo-soft);display:flex;align-items:center;justify-content:center;">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#3F3795" stroke-width="1.6"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="2.5"/></svg>
+            </div>
+            <div style="flex:1;"><div style="font:600 16px/1.2 'Spectral',serif;">{{ mn.title }}</div><div style="font:400 12px/1 'DM Sans';color:var(--ink3);margin-top:4px;">{{ mn.meta }}</div></div>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#9A9183" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+    </sc-if>
+
+    <!-- ============ SPECIAL EVENTS ============ -->
+    <sc-if value="{{ vEvents }}" hint-placeholder-val="{{ true }}">
+    <div style="flex:1;min-height:0;display:flex;flex-direction:column;background:var(--paper);">
+      <div style="flex:0 0 auto;padding:20px 20px 16px;display:flex;align-items:center;gap:14px;border-bottom:1px solid var(--line);">
+        <div onClick="{{ goMore }}" style="width:38px;height:38px;border-radius:50%;background:var(--surface);border:1px solid var(--line);display:flex;align-items:center;justify-content:center;cursor:pointer;">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#5E574D" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+        </div>
+        <h1 style="flex:1;font:600 19px/1 'DM Sans';">Special events</h1>
+        <div onClick="{{ newTask }}" style="display:{{ eventsNewShow }};align-items:center;gap:6px;padding:9px 13px;border-radius:11px;background:var(--indigo);color:#fff;cursor:pointer;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+          <span style="font:600 12px/1 'DM Sans';">Task</span>
+        </div>
+      </div>
+      <div style="flex:1;overflow-y:auto;padding:16px 20px 28px;">
+        <sc-for list="{{ events }}" as="ev" hint-placeholder-count="2">
+          <div style="background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:16px;margin-bottom:14px;box-shadow:0 2px 8px -4px rgba(40,28,70,.1);">
+            <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;">
+              <div style="width:40px;height:40px;border-radius:12px;background:var(--gold-soft);display:flex;flex-direction:column;align-items:center;justify-content:center;">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#8E681F" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l2.6 6.2 6.4.5-4.9 4.2 1.5 6.1L12 16.8 6.4 20l1.5-6.1L3 9.7l6.4-.5z"/></svg>
+              </div>
+              <div style="flex:1;"><div style="font:600 16px/1.2 'Spectral',serif;">{{ ev.title }}</div><div style="font:400 12px/1 'DM Sans';color:var(--ink3);margin-top:3px;">{{ ev.date }}</div></div>
+            </div>
+            <sc-for list="{{ ev.points }}" as="pt" hint-placeholder-count="3">
+              <div style="display:flex;align-items:center;gap:11px;padding:11px 0;border-top:1px solid var(--line);">
+                <div style="flex:1;"><div style="font:600 13px/1.2 'DM Sans';color:{{ pt.ownerColor }};">{{ pt.text }}</div><div style="font:400 11px/1 'DM Sans';color:var(--ink3);margin-top:3px;">{{ pt.owner }}</div></div>
+                <span style="font:600 10px/1 'DM Sans';padding:5px 9px;border-radius:7px;background:{{ pt.statusBg }};color:{{ pt.statusFg }};">{{ pt.statusLabel }}</span>
+                <div onClick="{{ pt.assign }}" style="display:{{ pt.assignShow }};width:30px;height:30px;border-radius:8px;align-items:center;justify-content:center;background:var(--indigo-soft);cursor:pointer;flex:0 0 auto;">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#3F3795" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="3"/><path d="M19 8v6M22 11h-6"/></svg>
+                </div>
+              </div>
+            </sc-for>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+    </sc-if>
+
+    <!-- ============ BOTTOM NAV ============ -->
+    <sc-if value="{{ showNav }}" hint-placeholder-val="{{ true }}">
+    <div style="flex:0 0 auto;background:rgba(255,255,255,.92);backdrop-filter:blur(14px);border-top:1px solid var(--line);display:flex;justify-content:space-around;padding:9px 6px 26px;">
+      <div onClick="{{ navHome }}" style="display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer;flex:1;color:{{ cHome }};">
+        <svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.5 12 4l9 6.5"/><path d="M5 9.5V20h14V9.5"/></svg>
+        <span style="font:600 10px/1 'DM Sans';">Home</span>
+      </div>
+      <div onClick="{{ navSongs }}" style="display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer;flex:1;color:{{ cSongs }};">
+        <svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V6l10-2v12"/><circle cx="6.5" cy="18" r="2.5"/><circle cx="16.5" cy="16" r="2.5"/></svg>
+        <span style="font:600 10px/1 'DM Sans';">Songs</span>
+      </div>
+      <div onClick="{{ navRehearse }}" style="display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer;flex:1;color:{{ cRehearse }};">
+        <svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="5" width="16" height="16" rx="2.5"/><path d="M8 3v4M16 3v4M4 10h16"/><path d="M12 14v3M9.5 12.5l2.5 1.5 2.5-1.5"/></svg>
+        <span style="font:600 10px/1 'DM Sans';">Rehearse</span>
+      </div>
+      <div onClick="{{ navService }}" style="display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer;flex:1;color:{{ cService }};">
+        <svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5h6a1 1 0 0 1 1 1v0H8v0a1 1 0 0 1 1-1z"/><path d="M8 4H6a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2h-2"/><path d="m8.5 13 2 2 4-4"/></svg>
+        <span style="font:600 10px/1 'DM Sans';">Service</span>
+      </div>
+      <div onClick="{{ navMore }}" style="display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer;flex:1;color:{{ cMore }};">
+        <svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="6" height="6" rx="1.5"/><rect x="14" y="4" width="6" height="6" rx="1.5"/><rect x="4" y="14" width="6" height="6" rx="1.5"/><rect x="14" y="14" width="6" height="6" rx="1.5"/></svg>
+        <span style="font:600 10px/1 'DM Sans';">More</span>
+      </div>
+    </div>
+    </sc-if>
+
+    <!-- ============ TOAST ============ -->
+    <sc-if value="{{ toast }}" hint-placeholder-val="{{ true }}">
+    <div style="position:absolute;left:0;right:0;bottom:96px;display:flex;justify-content:center;z-index:60;pointer-events:none;">
+      <div style="background:#1B1740;color:#fff;padding:12px 18px;border-radius:13px;font:600 13px/1.3 'DM Sans';box-shadow:0 14px 30px -8px rgba(0,0,0,.5);display:flex;align-items:center;gap:9px;max-width:330px;animation:fadeUp .25s ease;">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#7CE0A0" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>{{ toast }}
+      </div>
+    </div>
+    </sc-if>
+
+    <!-- ============ BOTTOM SHEET (admin actions) ============ -->
+    <sc-if value="{{ sheetOpen }}" hint-placeholder-val="{{ true }}">
+    <div style="position:absolute;inset:0;z-index:70;display:flex;flex-direction:column;justify-content:flex-end;">
+      <div onClick="{{ sheet.close }}" style="position:absolute;inset:0;background:rgba(27,23,64,.5);backdrop-filter:blur(2px);animation:fadeUp .2s ease;"></div>
+      <div style="position:relative;background:var(--paper);border-radius:26px 26px 0 0;max-height:80%;display:flex;flex-direction:column;box-shadow:0 -16px 40px -10px rgba(27,23,64,.4);animation:fadeUp .25s ease;">
+        <div style="flex:0 0 auto;padding:12px 20px 6px;">
+          <div style="width:38px;height:4px;border-radius:4px;background:var(--line2);margin:0 auto 12px;"></div>
+          <div style="display:flex;align-items:center;gap:12px;">
+            <h2 style="flex:1;font:600 19px/1.1 'Spectral',serif;">{{ sheet.title }}</h2>
+            <div onClick="{{ sheet.close }}" style="width:32px;height:32px;border-radius:50%;background:var(--surface);border:1px solid var(--line);display:flex;align-items:center;justify-content:center;cursor:pointer;">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#5E574D" stroke-width="2" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+            </div>
+          </div>
+        </div>
+        <div style="flex:1;overflow-y:auto;padding:8px 20px 26px;">
+
+          <!-- ADD MEMBER -->
+          <sc-if value="{{ sheet.isMember }}" hint-placeholder-val="{{ true }}">
+          <div>
+            <div style="font:500 13px/1 'DM Sans';color:var(--ink2);margin-bottom:7px;">Full name</div>
+            <input value="{{ sheet.name }}" onInput="{{ sheet.setName }}" placeholder="e.g. Mary Okafor" style="width:100%;padding:13px 14px;border:1px solid var(--line2);border-radius:12px;font:500 15px/1 'DM Sans';background:var(--surface);outline:none;color:var(--ink);"/>
+            <div style="font:500 13px/1 'DM Sans';color:var(--ink2);margin:16px 0 7px;">Phone or email</div>
+            <input value="{{ sheet.contact }}" onInput="{{ sheet.setContact }}" placeholder="For the join link" style="width:100%;padding:13px 14px;border:1px solid var(--line2);border-radius:12px;font:500 15px/1 'DM Sans';background:var(--surface);outline:none;color:var(--ink);"/>
+            <div style="font:500 13px/1 'DM Sans';color:var(--ink2);margin:16px 0 8px;">Voice part</div>
+            <div style="display:flex;gap:7px;flex-wrap:wrap;">
+              <sc-for list="{{ sheet.partChips }}" as="c" hint-placeholder-count="4">
+                <div onClick="{{ c.pick }}" style="padding:9px 14px;border-radius:999px;font:600 12px/1 'DM Sans';cursor:pointer;background:{{ c.bg }};color:{{ c.fg }};border:1px solid {{ c.bd }};">{{ c.label }}</div>
+              </sc-for>
+            </div>
+            <div style="font:500 13px/1 'DM Sans';color:var(--ink2);margin:16px 0 8px;">Role</div>
+            <div style="display:flex;gap:7px;flex-wrap:wrap;">
+              <sc-for list="{{ sheet.roleChips }}" as="c" hint-placeholder-count="4">
+                <div onClick="{{ c.pick }}" style="padding:9px 14px;border-radius:999px;font:600 12px/1 'DM Sans';cursor:pointer;background:{{ c.bg }};color:{{ c.fg }};border:1px solid {{ c.bd }};">{{ c.label }}</div>
+              </sc-for>
+            </div>
+            <div onClick="{{ sheet.toggleInvite }}" style="display:flex;align-items:center;gap:12px;margin-top:18px;padding:14px;background:var(--surface);border:1px solid var(--line);border-radius:14px;cursor:pointer;">
+              <div style="flex:1;"><div style="font:600 14px/1 'DM Sans';">Send a join link</div><div style="font:400 12px/1.4 'DM Sans';color:var(--ink3);margin-top:3px;">They self-register, land pre-tagged</div></div>
+              <div style="width:46px;height:27px;border-radius:999px;padding:3px;background:{{ sheet.inviteTrack }};transition:.2s;"><div style="width:21px;height:21px;border-radius:50%;background:#fff;transform:{{ sheet.inviteKnob }};transition:.2s;box-shadow:0 1px 3px rgba(0,0,0,.3);"></div></div>
+            </div>
+            <div onClick="{{ sheet.saveMember }}" style="margin-top:18px;padding:15px;text-align:center;background:var(--indigo);color:#fff;border-radius:14px;font:600 15px/1 'DM Sans';cursor:pointer;">Add to roster</div>
+          </div>
+          </sc-if>
+
+          <!-- MANAGE MEMBER -->
+          <sc-if value="{{ sheet.isManage }}" hint-placeholder-val="{{ true }}">
+          <div>
+            <div style="font:500 13px/1 'DM Sans';color:var(--ink2);margin:2px 0 8px;">Change role</div>
+            <div style="display:flex;gap:7px;flex-wrap:wrap;">
+              <sc-for list="{{ sheet.roleChips }}" as="c" hint-placeholder-count="4">
+                <div onClick="{{ c.pick }}" style="padding:9px 14px;border-radius:999px;font:600 12px/1 'DM Sans';cursor:pointer;background:{{ c.bg }};color:{{ c.fg }};border:1px solid {{ c.bd }};">{{ c.label }}</div>
+              </sc-for>
+            </div>
+            <div onClick="{{ sheet.applyRole }}" style="margin-top:18px;padding:14px;text-align:center;background:var(--indigo);color:#fff;border-radius:13px;font:600 14px/1 'DM Sans';cursor:pointer;">Save role</div>
+            <div onClick="{{ sheet.toggleActive }}" style="margin-top:10px;padding:14px;text-align:center;background:{{ sheet.manageDeactivateBg }};color:{{ sheet.manageDeactivateFg }};border-radius:13px;font:600 14px/1 'DM Sans';cursor:pointer;">{{ sheet.manageDeactivateLabel }}</div>
+            <div style="font:400 11px/1.4 'DM Sans';color:var(--ink3);text-align:center;margin-top:10px;">Deactivating keeps attendance &amp; assignment history.</div>
+          </div>
+          </sc-if>
+
+          <!-- NEW ANNOUNCEMENT -->
+          <sc-if value="{{ sheet.isAnnounce }}" hint-placeholder-val="{{ true }}">
+          <div>
+            <div style="font:500 13px/1 'DM Sans';color:var(--ink2);margin-bottom:7px;">Title</div>
+            <input value="{{ sheet.title2 }}" onInput="{{ sheet.setTitle }}" placeholder="What's the notice?" style="width:100%;padding:13px 14px;border:1px solid var(--line2);border-radius:12px;font:500 15px/1 'DM Sans';background:var(--surface);outline:none;color:var(--ink);"/>
+            <div style="font:500 13px/1 'DM Sans';color:var(--ink2);margin:16px 0 7px;">Message</div>
+            <textarea value="{{ sheet.body }}" onInput="{{ sheet.setBody }}" placeholder="Write the details…" style="width:100%;height:96px;padding:13px 14px;border:1px solid var(--line2);border-radius:12px;font:400 14px/1.5 'DM Sans';background:var(--surface);outline:none;resize:none;color:var(--ink);"></textarea>
+            <div style="font:500 13px/1 'DM Sans';color:var(--ink2);margin:16px 0 8px;">Audience</div>
+            <div style="display:flex;gap:7px;flex-wrap:wrap;">
+              <sc-for list="{{ sheet.audChips }}" as="c" hint-placeholder-count="4">
+                <div onClick="{{ c.pick }}" style="padding:9px 13px;border-radius:999px;font:600 12px/1 'DM Sans';cursor:pointer;background:{{ c.bg }};color:{{ c.fg }};border:1px solid {{ c.bd }};">{{ c.label }}</div>
+              </sc-for>
+            </div>
+            <div onClick="{{ sheet.togglePin }}" style="display:flex;align-items:center;gap:12px;margin-top:18px;padding:14px;background:var(--surface);border:1px solid var(--line);border-radius:14px;cursor:pointer;">
+              <div style="flex:1;"><div style="font:600 14px/1 'DM Sans';">Pin to top</div><div style="font:400 12px/1.4 'DM Sans';color:var(--ink3);margin-top:3px;">Stays above the feed until unpinned</div></div>
+              <div style="width:46px;height:27px;border-radius:999px;padding:3px;background:{{ sheet.pinTrack }};transition:.2s;"><div style="width:21px;height:21px;border-radius:50%;background:#fff;transform:{{ sheet.pinKnob }};transition:.2s;box-shadow:0 1px 3px rgba(0,0,0,.3);"></div></div>
+            </div>
+            <div onClick="{{ sheet.publish }}" style="margin-top:18px;padding:15px;text-align:center;background:var(--indigo);color:#fff;border-radius:14px;font:600 15px/1 'DM Sans';cursor:pointer;">Publish &amp; notify</div>
+          </div>
+          </sc-if>
+
+          <!-- ASSIGN (member picker) -->
+          <sc-if value="{{ sheet.isAssign }}" hint-placeholder-val="{{ true }}">
+          <div>
+            <div style="font:400 12px/1.4 'DM Sans';color:var(--ink3);margin-bottom:12px;">Active members only · unavailable members are dimmed.</div>
+            <sc-for list="{{ sheet.picker }}" as="p" hint-placeholder-count="5">
+              <div onClick="{{ p.pick }}" style="display:flex;align-items:center;gap:12px;padding:11px 12px;border-radius:13px;margin-bottom:8px;cursor:pointer;background:{{ p.rowBg }};border:1px solid {{ p.rowBd }};">
+                <div style="width:36px;height:36px;border-radius:50%;background:{{ p.color }};color:#fff;display:flex;align-items:center;justify-content:center;font:600 13px/1 'DM Sans';">{{ p.initials }}</div>
+                <div style="flex:1;"><div style="font:600 14px/1.2 'DM Sans';">{{ p.name }}</div><div style="font:500 11px/1 'DM Sans';color:{{ p.availColor }};margin-top:3px;">{{ p.availLabel }}</div></div>
+                <div style="width:24px;height:24px;border-radius:50%;border:2px solid {{ p.tickBd }};background:{{ p.tick }};display:flex;align-items:center;justify-content:center;">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="opacity:{{ p.check }};"><path d="M20 6 9 17l-5-5"/></svg>
+                </div>
+              </div>
+            </sc-for>
+            <div onClick="{{ sheet.commit }}" style="margin-top:10px;padding:15px;text-align:center;background:var(--indigo);color:#fff;border-radius:14px;font:600 15px/1 'DM Sans';cursor:pointer;">Confirm assignment</div>
+          </div>
+          </sc-if>
+
+          <!-- ADD PART -->
+          <sc-if value="{{ sheet.isPart }}" hint-placeholder-val="{{ true }}">
+          <div>
+            <div style="font:500 13px/1 'DM Sans';color:var(--ink2);margin-bottom:7px;">Part name</div>
+            <input value="{{ sheet.partName }}" onInput="{{ sheet.setPartName }}" placeholder="e.g. Tenor 2, Descant" style="width:100%;padding:13px 14px;border:1px solid var(--line2);border-radius:12px;font:500 15px/1 'DM Sans';background:var(--surface);outline:none;color:var(--ink);"/>
+            <div style="font:500 13px/1 'DM Sans';color:var(--ink2);margin:16px 0 7px;">Notes from the lead</div>
+            <textarea value="{{ sheet.partNotes }}" onInput="{{ sheet.setPartNotes }}" placeholder="Direction for this section…" style="width:100%;height:84px;padding:13px 14px;border:1px solid var(--line2);border-radius:12px;font:400 14px/1.5 'DM Sans';background:var(--surface);outline:none;resize:none;color:var(--ink);"></textarea>
+            <div style="margin-top:16px;border:1.5px dashed var(--line2);border-radius:14px;padding:18px;text-align:center;background:var(--surface2);">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#9A9183" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="margin-bottom:6px;"><path d="M12 16V4M7 9l5-5 5 5"/><path d="M4 16v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg>
+              <div style="font:500 12px/1.4 'DM Sans';color:var(--ink2);">Upload the part stem / vocal guide</div>
+            </div>
+            <div onClick="{{ sheet.savePart }}" style="margin-top:18px;padding:15px;text-align:center;background:var(--indigo);color:#fff;border-radius:14px;font:600 15px/1 'DM Sans';cursor:pointer;">Add part</div>
+          </div>
+          </sc-if>
+
+          <!-- ASSIGN TASK -->
+          <sc-if value="{{ sheet.isTask }}" hint-placeholder-val="{{ true }}">
+          <div>
+            <div style="font:500 13px/1 'DM Sans';color:var(--ink2);margin-bottom:7px;">Task</div>
+            <input value="{{ sheet.taskTitle }}" onInput="{{ sheet.setTaskTitle }}" placeholder="What needs doing?" style="width:100%;padding:13px 14px;border:1px solid var(--line2);border-radius:12px;font:500 15px/1 'DM Sans';background:var(--surface);outline:none;color:var(--ink);"/>
+            <div style="display:flex;gap:12px;margin-top:16px;align-items:center;">
+              <div style="font:500 13px/1 'DM Sans';color:var(--ink2);">Due</div>
+              <input value="{{ sheet.due }}" onInput="{{ sheet.setDue }}" placeholder="e.g. Fri, Aug 1" style="flex:1;padding:11px 14px;border:1px solid var(--line2);border-radius:12px;font:500 14px/1 'DM Sans';background:var(--surface);outline:none;color:var(--ink);"/>
+            </div>
+            <div style="font:500 13px/1 'DM Sans';color:var(--ink2);margin:16px 0 8px;">Assign to <span style="color:var(--indigo);font-weight:600;">{{ sheet.assigneeLabel }}</span></div>
+            <sc-for list="{{ sheet.picker }}" as="p" hint-placeholder-count="5">
+              <div onClick="{{ p.pick }}" style="display:flex;align-items:center;gap:12px;padding:11px 12px;border-radius:13px;margin-bottom:8px;cursor:pointer;background:{{ p.rowBg }};border:1px solid {{ p.rowBd }};">
+                <div style="width:36px;height:36px;border-radius:50%;background:{{ p.color }};color:#fff;display:flex;align-items:center;justify-content:center;font:600 13px/1 'DM Sans';">{{ p.initials }}</div>
+                <div style="flex:1;"><div style="font:600 14px/1.2 'DM Sans';">{{ p.name }}</div><div style="font:500 11px/1 'DM Sans';color:{{ p.availColor }};margin-top:3px;">{{ p.availLabel }}</div></div>
+                <div style="width:24px;height:24px;border-radius:50%;border:2px solid {{ p.tickBd }};background:{{ p.tick }};display:flex;align-items:center;justify-content:center;">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="opacity:{{ p.check }};"><path d="M20 6 9 17l-5-5"/></svg>
+                </div>
+              </div>
+            </sc-for>
+            <div onClick="{{ sheet.saveTask }}" style="margin-top:10px;padding:15px;text-align:center;background:var(--indigo);color:#fff;border-radius:14px;font:600 15px/1 'DM Sans';cursor:pointer;">Assign &amp; notify</div>
+          </div>
+          </sc-if>
+
+          <!-- NEW ARRANGEMENT -->
+          <sc-if value="{{ sheet.isArr }}" hint-placeholder-val="{{ true }}">
+          <div>
+            <div style="display:inline-flex;align-items:center;gap:7px;padding:6px 12px;border-radius:999px;background:var(--indigo-soft);color:var(--indigo-d);font:600 12px/1 'DM Sans';">{{ sheet.arrTypeLabel }}</div>
+            <div style="font:500 13px/1 'DM Sans';color:var(--ink2);margin:16px 0 7px;">Title</div>
+            <input value="{{ sheet.arrTitle }}" onInput="{{ sheet.setArrTitle }}" placeholder="e.g. Resurrection Medley" style="width:100%;padding:13px 14px;border:1px solid var(--line2);border-radius:12px;font:500 15px/1 'DM Sans';background:var(--surface);outline:none;color:var(--ink);"/>
+            <div style="font:400 12px/1.5 'DM Sans';color:var(--ink3);margin-top:12px;">Next: order songs from the Song Bank, attach lyrics &amp; recordings, add praise loops. Reusable across services.</div>
+            <div onClick="{{ sheet.saveArr }}" style="margin-top:18px;padding:15px;text-align:center;background:var(--indigo);color:#fff;border-radius:14px;font:600 15px/1 'DM Sans';cursor:pointer;">Create &amp; open builder</div>
+          </div>
+          </sc-if>
+
+        </div>
+      </div>
+    </div>
+    </sc-if>
+
+  </div>
+</div>
+
+<template id="__bundler_thumbnail" data-bg-color="#2C2670">
+  <svg viewBox="0 0 1200 800" xmlns="http://www.w3.org/2000/svg">
+    <rect width="1200" height="800" fill="#2C2670"/>
+    <g transform="translate(600 360)" fill="none">
+      <rect x="-44" y="-160" width="88" height="88" rx="13" transform="rotate(45 0 -116)" fill="#F4EAD4"/>
+      <rect x="-160" y="-44" width="88" height="88" rx="13" transform="rotate(45 -116 0)" fill="#B0843A" opacity="0.85"/>
+      <rect x="72" y="-44" width="88" height="88" rx="13" transform="rotate(45 116 0)" fill="#B0843A" opacity="0.85"/>
+      <rect x="-44" y="72" width="88" height="88" rx="13" transform="rotate(45 0 116)" fill="#5C53C4"/>
+    </g>
+    <text x="600" y="620" text-anchor="middle" font-family="Georgia, 'Times New Roman', serif" font-size="78" fill="#F6F1E7">Choral</text>
+  </svg>
+</template></x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:452,&quot;height&quot;:912},&quot;choirName&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;Heavenly Voices&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;memberName&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;Tope&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;liveTheme&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;Indigo&quot;,&quot;Charcoal&quot;],&quot;default&quot;:&quot;Indigo&quot;,&quot;tsType&quot;:&quot;string&quot;}}">
+class Component extends DCLogic {
+  constructor(props){
+    super(props);
+    this.PARENT = { song:'songs', addsong:'songs', rehearsal:'rehearse', qr:'rehearsal', live:'rehearsal', pw:'service', members:'more', board:'more', uniform:'more', ministration:'more', events:'more' };
+    this.GROUP = { home:'home', songs:'songs', song:'songs', addsong:'songs', rehearse:'rehearse', rehearsal:'rehearse', qr:'rehearse', live:'rehearse', service:'service', pw:'service', more:'more', members:'more', board:'more', uniform:'more', ministration:'more', events:'more' };
+
+    this.songs = [
+      { id:0, title:'Imela (Thank You)', composer:'Nathaniel Bassey', key:'F', tempo:68, tags:['Slow','Worship','Igbo'], coming:true, learn:0.45 },
+      { id:1, title:'Ekwueme', composer:'Prospa Ochimana', key:'Ab', tempo:76, tags:['Mid','Worship','Igbo'], coming:true, learn:0.7 },
+      { id:2, title:'Way Maker', composer:'Sinach', key:'Bb', tempo:70, tags:['Slow','Worship'], coming:true, learn:0.2 },
+      { id:3, title:'Olorun Agbaye', composer:'Nathaniel Bassey', key:'G', tempo:80, tags:['Mid','Praise','Yoruba'], coming:false, learn:0.9 },
+      { id:4, title:'Total Praise', composer:'Richard Smallwood', key:'Eb', tempo:60, tags:['Slow','Choir'], coming:false, learn:1 },
+      { id:5, title:'Goodness of God', composer:'Bethel Music', key:'A', tempo:72, tags:['Slow','Worship'], coming:false, learn:0.55 },
+      { id:6, title:'We Give You Praise', composer:'Traditional', key:'D', tempo:120, tags:['Fast','Praise'], coming:false, learn:0.8 },
+      { id:7, title:'Oh How I Love Jesus', composer:'Traditional', key:'C', tempo:96, tags:['Fast','Hymn'], coming:false, learn:0.65 }
+    ];
+    const ly = "Verse 1\nWe lift our voices to the sky\nMorning breaks, the shadows fade\nEvery breath an offering\nFaithful through our every day\n\nChorus\nGreater still, greater still\nYour mercy carries on\nWe will sing, we will sing\nOf the goodness You have shown\n\nBridge\nNone beside You, none above\nEverlasting, boundless love";
+    this.songs.forEach(s => { s.lyrics = ly; });
+
+    this.partsByLetter = [
+      { letter:'S', name:'Soprano', color:'#5C53C4' },
+      { letter:'A', name:'Alto', color:'#B0843A' },
+      { letter:'T', name:'Tenor', color:'#3E7C53' },
+      { letter:'B', name:'Bass', color:'#2C2670' }
+    ];
+    this.songNotes = [
+      { initials:'TO', who:'Tope · Alto lead', text:"Altos — soften the entry on the bridge, let the sopranos carry the top line first." },
+      { initials:'GA', who:'Grace · Director', text:"Hold the final chord four counts. Watch my cue before the reprise." }
+    ];
+
+    this.agenda = [
+      { name:'Warm-up & breathing', owner:'Grace A.', init:'GA', mins:10 },
+      { name:'Alto sectional', owner:'You (Tope)', init:'TO', mins:15 },
+      { name:'"Imela" run-through', owner:'Grace A.', init:'GA', mins:12 },
+      { name:'"Ekwueme" run-through', owner:'Min. David', init:'DO', mins:12 },
+      { name:'P&W block', owner:'Sister Joy', init:'JE', mins:20 },
+      { name:'Announcements', owner:'Grace A.', init:'GA', mins:6 }
+    ];
+    this.past = [
+      { day:'11', mon:'Jun', title:'Midweek rehearsal', place:'Main Auditorium', att:'24/28' },
+      { day:'04', mon:'Jun', title:'P&W intensive', place:'Choir room', att:'19/28' },
+      { day:'28', mon:'May', title:'Full run-through', place:'Main Auditorium', att:'26/28' }
+    ];
+
+    this.members = [
+      { name:'Grace A.', initials:'GA', part:'Soprano', role:'Director', avail:'Available', color:'#3F3795' },
+      { name:'Joy E.', initials:'JE', part:'Soprano', role:'Section Lead · P&W', avail:'Available', color:'#5C53C4' },
+      { name:'Blessing A.', initials:'BA', part:'Soprano', role:'Chorister', avail:'Available', color:'#7065CE' },
+      { name:'Tope (You)', initials:'TO', part:'Alto', role:'Section Lead', avail:'Available', color:'#B0843A' },
+      { name:'Ngozi U.', initials:'NU', part:'Alto', role:'Chorister', avail:'Unavailable', color:'#C79A4E' },
+      { name:'Faith M.', initials:'FM', part:'Tenor', role:'Chorister', avail:'Available', color:'#3E7C53' },
+      { name:'Samuel I.', initials:'SI', part:'Tenor', role:'Chorister', avail:'Available', color:'#4F8F66' },
+      { name:'Emeka N.', initials:'EN', part:'Bass', role:'Chorister', avail:'Available', color:'#2C2670' },
+      { name:'David O.', initials:'DO', part:'Bass', role:'Musician · Keys', avail:'Available', color:'#473C8C' },
+      { name:'Daniel K.', initials:'DK', part:'Bass', role:'Musician · Drums', avail:'Unavailable', color:'#5A4FA0' }
+    ];
+
+    this.notices = [
+      { initials:'GA', who:'Grace A.', role:'Director', time:'2h', color:'#3F3795', title:'Call time moved to 7:30 AM', body:"Sunday call time is now 7:30 AM sharp for sound check. Please confirm availability in the roster by Friday.", likes:12, comments:4 },
+      { initials:'JE', who:'Joy E.', role:'P&W Lead', time:'Yesterday', color:'#5C53C4', title:"New praise loop for 'Olorun Agbaye'", body:"Added the vamp in G to the arrangement. Tenors, listen to your guide before Thursday.", likes:8, comments:2 },
+      { initials:'TO', who:'Tope', role:'Alto Lead', time:'2 days', color:'#B0843A', title:'Alto sectional notes uploaded', body:"Watch the entry on the bridge of Imela — recording is on the song page.", likes:6, comments:5 }
+    ];
+
+    this.pwSongsData = [
+      { title:'Olorun Agbaye', key:'G', transition:'Open · 8 bars intro' },
+      { title:'We Give You Praise', key:'D', transition:'Modulate up from G' },
+      { title:'Ekwueme', key:'Ab', transition:'Settle into worship' }
+    ];
+    this.pwLoopsData = [
+      { name:'Vamp in G', detail:'4-chord · repeat x8' },
+      { name:'Turnaround', detail:'Bridge to reprise' },
+      { name:'Spontaneous', detail:'Free worship · Ab' }
+    ];
+    this.songOrderData = [
+      { title:'Olorun Agbaye', lead:'Joy E.', key:'G' },
+      { title:'We Give You Praise', lead:'Joy E.', key:'D' },
+      { title:'Ekwueme', lead:'David O.', key:'Ab' },
+      { title:'Imela (offering)', lead:'Grace A.', key:'F' }
+    ];
+    this.dutiesData = [
+      { role:'Worship lead', who:'Joy E.' },
+      { role:'Backup singers', who:'Blessing, Ngozi, Faith' },
+      { role:'Keys', who:'David O.' },
+      { role:'Drums', who:'Samuel I.' }
+    ];
+    this.checklistData = [
+      'Sound check complete',
+      'In-ears charged & paired',
+      'Uniforms confirmed (see try-on)',
+      'Lyrics loaded to screens',
+      'Pitch references set per song',
+      'Backup singers briefed'
+    ];
+
+    this.tops = [ {name:'Ivory tunic', color:'#F3ECDD'}, {name:'Indigo robe', color:'#3F3795'}, {name:'Gold top', color:'#C9A24B'}, {name:'White shirt', color:'#FFFFFF'} ];
+    this.bottoms = [ {name:'Black', color:'#2A2622'}, {name:'Indigo', color:'#2C2670'}, {name:'Cream', color:'#E7DCC5'} ];
+    this.accents = [ {name:'Indigo', color:'#3F3795'}, {name:'Gold', color:'#B0843A'}, {name:'Burgundy', color:'#7E2B3B'}, {name:'Teal', color:'#2E6E6E'} ];
+    this.skins = ['#F2D2B6','#E0B48F','#C68A5E','#9C6438','#6B4226'];
+    this.hairs = ['#3A2A1C','#241B12','#1C1C1C','#2A1D14','#120D0A'];
+    this.bodyNames = ['Slim','Regular','Fuller'];
+    this.looksData = [
+      { name:'Indigo & Gold', top:'#3F3795', bottom:'#2A2622', accent:'#C9A24B', skin:'#C68A5E' },
+      { name:'Ivory & Burgundy', top:'#F3ECDD', bottom:'#2A2622', accent:'#7E2B3B', skin:'#E0B48F' },
+      { name:'All white & Teal', top:'#FFFFFF', bottom:'#E7DCC5', accent:'#2E6E6E', skin:'#9C6438' }
+    ];
+
+    // ---- permissions service (single source of truth) ----
+    this.PERMS = {
+      admin:     ['*'],
+      lead:      ['add_song','manage_parts','build_arrangement','assign_owner','assign_lead','assign_backup','assign_musician','announce'],
+      musician:  [],
+      chorister: []
+    };
+    this.ROLE_LABEL = { admin:'Director', lead:'Section Lead', musician:'Musician', chorister:'Chorister' };
+
+    // per-song parts seed (only flagged songs)
+    const seedParts = {};
+    this.songs.filter(x=>x.coming).forEach(sg=>{
+      seedParts[sg.id] = [
+        { name:'Soprano', notes:'Lead the top line through the chorus.', stem:true,  by:'Joy E.' },
+        { name:'Alto',    notes:'Soften the entry on the bridge.',       stem:true,  by:'Tope' },
+        { name:'Tenor',   notes:'Listen to your guide before Thursday.', stem:true,  by:'David O.' },
+        { name:'Bass',    notes:'Anchor the root through the vamp.',      stem:false, by:'Emeka N.' }
+      ];
+    });
+
+    const eventsSeed = [
+      { title:'Annual Carol Night', date:'Dec 20', points:[
+        { text:'Book the main hall', owner:'Grace A.', status:'in progress' },
+        { text:'Design the flyer', owner:null, status:'open' },
+        { text:'Set rehearsal schedule', owner:'Tope (You)', status:'open' }
+      ]},
+      { title:'Choir Anniversary', date:'Aug 03', points:[
+        { text:'Confirm guest ministers', owner:null, status:'open' },
+        { text:'Order new uniforms', owner:'Joy E.', status:'in progress' }
+      ]}
+    ];
+
+    this.state = {
+      view:'home',
+      role:'admin', sheet:null, toast:null,
+      songId:0,
+      playing:false, solo:null, mix:{S:82,A:74,T:68,B:78}, muted:{},
+      liveRunning:false, liveIdx:0, liveRemaining:600, liveStarted:false,
+      qrToken:this.genToken(), qrLeft:30, qrCells:this.genMatrix(this.genToken()), signins:[], pendIdx:0, qrTick:0,
+      checks:{0:true,1:true},
+      uTop:0, uBottom:0, uAccent:1, uSkin:2, uBody:1,
+      votes:{0:9,1:5,2:3}, voted:{},
+      f:{ title:'', key:'C', tempo:'72', composer:'', lyrics:'', coming:true, tags:[] },
+      // ---- mutable, admin-managed collections ----
+      members: this.members.map(m=>({ ...m, active:true })),
+      announcements: this.notices.map((n,i)=>({ ...n, audience: i===0?'Everyone':(i===1?'Leads only':'Alto section'), pinned: i===0 })),
+      serviceDuty: { lead:['Joy E.'], backup:['Blessing A.','Ngozi U.','Faith M.'], keys:['David O.'], drums:['Samuel I.'] },
+      tasks: [
+        { title:'Confirm Sunday availability', assignee:'Tope (You)', due:'Fri', status:'assigned' },
+        { title:'Upload alto sectional audio', assignee:'Tope (You)', due:'Wed', status:'in progress' }
+      ],
+      parts: seedParts,
+      pwLeadName:'Joy E.',
+      arrangements: [
+        { id:'pw1',  type:'praise_worship', title:'Sunday Praise — June', songs:3, loops:3 },
+        { id:'min1', type:'ministration',   title:'Resurrection Medley',   songs:4, loops:0 }
+      ],
+      events: eventsSeed
+    };
+    this.NOTE = { 'C':261.63,'C#':277.18,'Db':277.18,'D':293.66,'Eb':311.13,'E':329.63,'F':349.23,'F#':369.99,'Gb':369.99,'G':392.00,'Ab':415.30,'A':440.00,'Bb':466.16,'B':493.88 };
+    this.tick = this.tick.bind(this);
+  }
+
+  componentDidMount(){
+    // seed initial sign-ins
+    this.setState({ signins:[ this.mkSign(0,true), this.mkSign(2,true) ], pendIdx:3 });
+    this._timer = setInterval(this.tick, 250);
+  }
+  componentWillUnmount(){
+    clearInterval(this._timer);
+    if(this._ctx){ try{ this._ctx.close(); }catch(e){} }
+  }
+
+  mkSign(memberIdx, onTime){
+    const roster = (this.state && this.state.members) ? this.state.members : this.members;
+    const m = roster[memberIdx % roster.length];
+    return { name:m.name, initials:m.initials, part:m.part, color:m.color, status: onTime?'On time':'Late', onTime:!!onTime };
+  }
+
+  tick(){
+    const now = Date.now();
+    const st = {};
+    const s = this.state;
+    // lyric auto-scroll (delta-based so timer throttling doesn't make it choppy)
+    if(s.playing && this.lyricsEl){
+      const dt = this._lastScroll ? (now - this._lastScroll) : 0;
+      this.lyricsEl.scrollTop += dt * 0.045;
+    }
+    this._lastScroll = now;
+
+    if(s.view==='live' && s.liveRunning && this._liveDeadline){
+      const rem = Math.round((this._liveDeadline - now)/1000);
+      if(rem !== s.liveRemaining) st.liveRemaining = rem;
+    }
+    if(s.view==='qr'){
+      if(!this._qrStart) this._qrStart = now;
+      let left = 30 - Math.floor((now - this._qrStart)/1000);
+      if(left <= 0){ const t = this.genToken(); this._qrStart = now; left = 30; st.qrToken = t; st.qrCells = this.genMatrix(t); }
+      if(left !== s.qrLeft) st.qrLeft = left;
+      if(!this._lastSign) this._lastSign = now;
+      if(now - this._lastSign > 3500 && s.pendIdx < this.members.length){
+        this._lastSign = now;
+        const onTime = Math.random() > 0.35;
+        st.signins = [ ...s.signins, this.mkSign(s.pendIdx, onTime) ];
+        st.pendIdx = s.pendIdx + 1;
+      }
+    } else { this._qrStart = null; }
+    if(Object.keys(st).length) this.setState(st);
+  }
+
+  genToken(){ return String(Math.floor(100000 + Math.random()*899999)); }
+  genMatrix(token){
+    let seed = 0; for(let i=0;i<token.length;i++){ seed = (seed*31 + token.charCodeAt(i)) >>> 0; }
+    const rnd = ()=>{ seed = (seed*1664525 + 1013904223) >>> 0; return seed/4294967296; };
+    const N = 21, cells = [];
+    const finder = (r,c)=>{
+      // local coords within a 7x7 finder
+      const ring = (r===0||r===6||c===0||c===6);
+      const core = (r>=2&&r<=4&&c>=2&&c<=4);
+      return ring||core;
+    };
+    for(let r=0;r<N;r++){ for(let c=0;c<N;c++){
+      let on;
+      if(r<7 && c<7) on = finder(r,c);
+      else if(r<7 && c>=N-7) on = finder(r,c-(N-7));
+      else if(r>=N-7 && c<7) on = finder(r-(N-7),c);
+      else if((r<8&&c<8)||(r<8&&c>=N-8)||(r>=N-8&&c<8)) on = false; // separator
+      else on = rnd() > 0.52;
+      cells.push({ bg: on ? '#1B1740' : 'transparent' });
+    }}
+    return cells;
+  }
+
+  // ---- navigation ----
+  go(view){ this.setState({ view }); }
+  back(){ const p = this.PARENT[this.state.view] || 'home'; this.setState({ view:p }); }
+  nav(group){ this.setState({ view: group }); }
+
+  // ---- audio ----
+  ensureCtx(){
+    if(!this._ctx){ this._ctx = new (window.AudioContext||window.webkitAudioContext)(); this._master = this._ctx.createGain(); this._master.gain.value = 0; const lp = this._ctx.createBiquadFilter(); lp.type='lowpass'; lp.frequency.value=2400; this._master.connect(lp); lp.connect(this._ctx.destination); this._lp = lp; }
+    if(this._ctx.state==='suspended') this._ctx.resume();
+    return this._ctx;
+  }
+  songFreq(){ const s = this.songs[this.state.songId]; return this.NOTE[s.key] || 261.63; }
+  startPad(){
+    this.ensureCtx(); this.stopOsc();
+    const f0 = this.songFreq()/2; const ratios = { B:1, T:1.5, A:2, S:2.5 };
+    this._voices = {};
+    ['B','T','A','S'].forEach(k=>{
+      const o = this._ctx.createOscillator(); o.type = (k==='B'||k==='T')?'triangle':'sine'; o.frequency.value = f0*ratios[k];
+      const o2 = this._ctx.createOscillator(); o2.type='sine'; o2.frequency.value = f0*ratios[k]*2; o2.detune.value = 4;
+      const g = this._ctx.createGain(); g.gain.value = 0;
+      const g2 = this._ctx.createGain(); g2.gain.value = 0; // overtone
+      o.connect(g); o2.connect(g2); g.connect(this._master); g2.connect(this._master);
+      o.start(); o2.start();
+      this._voices[k] = { g, g2 };
+    });
+    this._master.gain.cancelScheduledValues(this._ctx.currentTime);
+    this._master.gain.setTargetAtTime(0.5, this._ctx.currentTime, 0.15);
+    this.applyGains();
+  }
+  stopOsc(){ if(this._voices){ Object.values(this._voices).forEach(v=>{ try{v.g.disconnect();v.g2.disconnect();}catch(e){} }); } }
+  stopPad(){
+    if(this._ctx && this._master){ this._master.gain.setTargetAtTime(0, this._ctx.currentTime, 0.12); }
+    setTimeout(()=>this.stopOsc(), 300);
+  }
+  applyGains(){
+    if(!this._voices) return;
+    const { mix, solo, muted } = this.state;
+    ['S','A','T','B'].forEach(k=>{
+      let level = mix[k]/100;
+      if(solo){ level = (solo===k)?Math.max(level,0.6):0; }
+      else if(muted[k]){ level = 0; }
+      const base = level*0.32;
+      if(this._voices[k]){
+        this._voices[k].g.gain.setTargetAtTime(base, this._ctx.currentTime, 0.08);
+        this._voices[k].g2.gain.setTargetAtTime(base*0.25, this._ctx.currentTime, 0.08);
+      }
+    });
+  }
+  togglePlay(){ if(this.state.playing){ this.stopPad(); this.setState({playing:false}); } else { this.startPad(); this.setState({playing:true}); } }
+  setMix(k,v){ const mix={...this.state.mix,[k]:Number(v)}; this.setState({mix}, ()=>this.applyGains()); }
+  toggleSolo(k){ const solo = this.state.solo===k?null:k; this.setState({solo}, ()=>this.applyGains()); }
+  toggleMute(k){ const muted={...this.state.muted,[k]:!this.state.muted[k]}; this.setState({muted}, ()=>this.applyGains()); }
+  pitchPipe(){
+    this.ensureCtx(); const t=this._ctx.currentTime; const o=this._ctx.createOscillator(); o.type='sine'; o.frequency.value=this.songFreq();
+    const g=this._ctx.createGain(); g.gain.setValueAtTime(0,t); g.gain.linearRampToValueAtTime(0.3,t+0.05); g.gain.setTargetAtTime(0,t+1.0,0.25);
+    o.connect(g); g.connect(this._ctx.destination); o.start(); o.stop(t+1.8);
+  }
+
+  // ---- live mode ----
+  startLive(){ this._liveDeadline = Date.now() + this.agenda[0].mins*60*1000; this.setState({ view:'live', liveRunning:true, liveStarted:true, liveIdx:0, liveRemaining:this.agenda[0].mins*60 }); }
+  toggleLive(){
+    if(this.state.liveRunning){ this._pausedRemaining = Math.round((this._liveDeadline - Date.now())/1000); this.setState({ liveRunning:false }); }
+    else { const r = (this._pausedRemaining!=null ? this._pausedRemaining : this.state.liveRemaining); this._liveDeadline = Date.now() + r*1000; this.setState({ liveRunning:true }); }
+  }
+  setItem(i){ this._liveDeadline = Date.now() + this.agenda[i].mins*60*1000; this._pausedRemaining = null; this.setState({ liveIdx:i, liveRemaining:this.agenda[i].mins*60, liveRunning:true }); }
+  prevItem(){ this.setItem(Math.max(0,this.state.liveIdx-1)); }
+  nextItem(){ this.setItem(Math.min(this.agenda.length-1,this.state.liveIdx+1)); }
+  exitLive(){ this.setState({ view:'rehearsal', liveRunning:false }); }
+  fmt(sec){ const neg=sec<0; const a=Math.abs(sec); const m=Math.floor(a/60); const s=a%60; return (neg?'+':'')+m+':'+(s<10?'0':'')+s; }
+
+  // ---- service ----
+  toggleCheck(i){ const checks={...this.state.checks,[i]:!this.state.checks[i]}; this.setState({checks}); }
+
+  // ---- form ----
+  setF(k,v){ this.setState({ f:{...this.state.f,[k]:v} }); }
+  toggleTag(t){ const has=this.state.f.tags.includes(t); const tags = has? this.state.f.tags.filter(x=>x!==t) : [...this.state.f.tags,t]; this.setF('tags',tags); }
+
+  // ---- uniform ----
+  vote(i){ if(this.state.voted[i]) return; this.setState({ votes:{...this.state.votes,[i]:this.state.votes[i]+1}, voted:{...this.state.voted,[i]:true} }); }
+
+  openSong(id){ this.setState({ view:'song', songId:id, playing:false, solo:null, muted:{} }); this.stopPad(); }
+
+  // ================= PERMISSIONS + ADMIN =================
+  can(action){ const p=this.PERMS[this.state.role]||[]; return p.includes('*')||p.includes(action); }
+  setRole(r){ this.setState({ role:r, sheet:null }); }
+  currentMember(){
+    const nm = this.props.memberName || 'Tope';
+    return this.state.members.find(m=>m.active && m.name.indexOf(nm)===0)
+        || this.state.members.find(m=>m.active) || this.state.members[0];
+  }
+
+  // ---- bottom-sheet plumbing ----
+  openSheet(type, data){ this.setState({ sheet:{ type, ...(data||{}) } }); }
+  closeSheet(){ this.setState({ sheet:null }); }
+  setSheet(patch){ this.setState({ sheet:{ ...this.state.sheet, ...patch } }); }
+  flash(msg){ clearTimeout(this._toastT); this.setState({ toast:msg }); this._toastT=setTimeout(()=>this.setState({ toast:null }), 2400); }
+
+  // ---- members ----
+  saveMember(){
+    const sh=this.state.sheet; if(!sh.name){ this.flash('Enter a name'); return; }
+    const initials = sh.name.trim().split(/\s+/).map(x=>x[0]).join('').slice(0,2).toUpperCase();
+    const colors=['#3F3795','#5C53C4','#7065CE','#B0843A','#C79A4E','#3E7C53','#4F8F66','#2C2670'];
+    const nm={ name:sh.name, initials, part:sh.part||'Soprano', role:sh.role||'Chorister', avail:'Available',
+      color:colors[this.state.members.length%colors.length], active:true, invited:!!sh.invite };
+    this.setState({ members:[...this.state.members, nm], sheet:null });
+    this.flash(sh.invite ? 'Invite link sent to '+sh.name : sh.name+' added to roster');
+  }
+  toggleMemberActive(){
+    const sh=this.state.sheet;
+    this.setState({ members:this.state.members.map(m=>m.name===sh.name?{...m, active:!m.active}:m), sheet:null });
+    this.flash('Membership updated · history kept');
+  }
+  applyMemberRole(){
+    const sh=this.state.sheet;
+    this.setState({ members:this.state.members.map(m=>m.name===sh.name?{...m, role:sh.role}:m), sheet:null });
+    this.flash('Role updated');
+  }
+
+  // ---- announcements ----
+  publishAnnouncement(){
+    const sh=this.state.sheet; if(!sh.title){ this.flash('Add a title'); return; }
+    const me=this.currentMember();
+    const a={ initials:me.initials, who:me.name.replace(' (You)',''), role:this.ROLE_LABEL[this.state.role],
+      time:'now', color:me.color, title:sh.title, body:sh.body||'', likes:0, comments:0,
+      audience:sh.audience||'Everyone', pinned:!!sh.pin };
+    this.setState({ announcements:[a, ...this.state.announcements], sheet:null });
+    this.flash('Published to '+(sh.audience||'Everyone'));
+  }
+
+  // ---- duty / lead assignment ----
+  toggleSel(name){
+    const sh=this.state.sheet; let sel=sh.selected||[];
+    if(sh.multi){ sel = sel.includes(name)? sel.filter(x=>x!==name):[...sel,name]; this.setSheet({ selected:sel }); }
+    else { this.setSheet({ selected:[name] }); }
+  }
+  commitAssign(){
+    const sh=this.state.sheet;
+    if(sh.target==='pwlead'){ const n=(sh.selected||[])[0]; if(n){ this.setState({ pwLeadName:n, sheet:null }); this.flash(n+' set as praise lead'); } else this.closeSheet(); return; }
+    const d={ ...this.state.serviceDuty }; d[sh.dutyKey]=sh.selected||[];
+    this.setState({ serviceDuty:d, sheet:null }); this.flash('Duty roster updated');
+  }
+
+  // ---- parts ----
+  savePart(){
+    const sh=this.state.sheet; if(!sh.partName){ this.flash('Name the part'); return; }
+    const parts={ ...this.state.parts }; const arr=[ ...(parts[sh.songId]||[]) ];
+    arr.push({ name:sh.partName, notes:sh.partNotes||'', stem:false, by:this.currentMember().name.replace(' (You)','') });
+    parts[sh.songId]=arr; this.setState({ parts, sheet:null }); this.flash(sh.partName+' part added');
+  }
+
+  // ---- tasks ----
+  saveTask(){
+    const sh=this.state.sheet; if(!sh.taskTitle){ this.flash('Task title required'); return; }
+    if(!sh.assignee){ this.flash('Pick an assignee'); return; }
+    const t={ title:sh.taskTitle, assignee:sh.assignee, due:sh.due||'This week', status:'assigned' };
+    let events=this.state.events;
+    if(sh.eventIdx!=null){
+      events=this.state.events.map((ev,i)=> i!==sh.eventIdx? ev : ({ ...ev, points: ev.points.map((p,j)=> j!==sh.pointIdx? p : ({ ...p, owner:sh.assignee, status:'in progress' })) }));
+    }
+    this.setState({ tasks:[t, ...this.state.tasks], events, sheet:null });
+    this.flash('Assigned to '+sh.assignee+' · they\u2019ll be notified');
+  }
+
+  // ---- arrangements ----
+  newArrangement(type){ this.openSheet('arrangement',{ arrType:type, title:'' }); }
+  saveArrangement(){
+    const sh=this.state.sheet; if(!sh.title){ this.flash('Title required'); return; }
+    const a={ id:'a'+Date.now(), type:sh.arrType, title:sh.title, songs:0, loops:0 };
+    this.setState({ arrangements:[...this.state.arrangements, a], sheet:null });
+    this.flash((sh.arrType==='ministration'?'Ministration':'Arrangement')+' created');
+  }
+
+  // ---- save song (now persists) ----
+  saveSong(){
+    const f=this.state.f; if(!f.title){ this.flash('Title required'); return; }
+    const id=this.songs.length;
+    this.songs.push({ id, title:f.title, composer:f.composer||'\u2014', key:f.key, tempo:Number(f.tempo)||72,
+      tags:f.tags.length?f.tags:['New'], coming:f.coming, learn:0,
+      lyrics:f.lyrics||'Lyrics to be added\u2026' });
+    const parts={ ...this.state.parts };
+    if(f.coming) parts[id]=[ {name:'Soprano',notes:'',stem:false,by:''},{name:'Alto',notes:'',stem:false,by:''},{name:'Tenor',notes:'',stem:false,by:''},{name:'Bass',notes:'',stem:false,by:''} ];
+    this.setState({ parts, f:{ title:'', key:'C', tempo:'72', composer:'', lyrics:'', coming:true, tags:[] }, view:'songs' });
+    this.flash(f.title+' saved to Song Bank');
+  }
+
+  renderVals(){
+    const s = this.state;
+    const v = s.view;
+    const choirName = this.props.choirName ?? 'Heavenly Voices';
+    const memberName = this.props.memberName ?? 'Tope';
+    const liveThemeProp = this.props.liveTheme ?? 'Indigo';
+    const initials = memberName.split(' ').map(x=>x[0]).join('').slice(0,2).toUpperCase();
+
+    const accent = c => c; // passthrough
+
+    const mkSongCard = (sg) => ({
+      id:sg.id, title:sg.title, composer:sg.composer, key:sg.key, tempo:sg.tempo, tags:sg.tags,
+      tagLine: sg.tags.join(' · '),
+      partsLabel: 'SATB guides',
+      pct: Math.round(sg.learn*100)+'%', pctLabel: Math.round(sg.learn*100)+'%',
+      open: ()=>this.openSong(sg.id),
+      play: (e)=>{ if(e&&e.stopPropagation)e.stopPropagation(); this.openSong(sg.id); }
+    });
+
+    const coming = this.songs.filter(x=>x.coming).map(mkSongCard);
+    const others = this.songs.filter(x=>!x.coming).map(mkSongCard);
+    const learn = this.songs.filter(x=>x.coming).map(mkSongCard);
+
+    // filters
+    const fdef = ['All','Slow','Mid','Fast','Worship','Praise','Igbo'];
+    const filters = fdef.map((label,i)=>({ label, bg: i===0?'var(--indigo)':'var(--surface)', fg: i===0?'#fff':'var(--ink2)', bd: i===0?'var(--indigo)':'var(--line2)' }));
+
+    // song detail
+    const song = this.songs[s.songId];
+    const songVM = { title:song.title, composer:song.composer, key:song.key, tempo:song.tempo, tagLine:song.tags.join(' · '), lyrics:song.lyrics, notes:this.songNotes };
+    const partRows = this.partsByLetter.map(p=>{
+      const k=p.letter; const isSolo=s.solo===k; const isMute=!!s.muted[k];
+      return { letter:k, name:p.name, color:p.color, val:s.mix[k],
+        onInput:(e)=>this.setMix(k, e.target.value),
+        solo:()=>this.toggleSolo(k), mute:()=>this.toggleMute(k),
+        soloBg:isSolo?'var(--gold)':'var(--surface)', soloFg:isSolo?'#fff':'var(--ink3)',
+        muteBg:isMute?'var(--red)':'var(--surface)', muteFg:isMute?'#fff':'var(--ink3)'
+      };
+    });
+
+    // live
+    const ag = this.agenda; const idx=s.liveIdx; const cur=ag[idx]; const total=cur.mins*60;
+    const rem=s.liveRemaining; const over = rem<0;
+    const pct = Math.max(0, Math.min(100, ((total-rem)/total)*100));
+    const ringColor = over ? 'var(--red)' : '#FFFFFF';
+    const liveBg = liveThemeProp==='Charcoal' ? 'linear-gradient(180deg,#211E1A,#2C2722)' : 'linear-gradient(180deg,#1B1740,#272058)';
+    const liveSegs = ag.map((a,i)=>({ bg: i<idx?'rgba(255,255,255,.85)':(i===idx? (over?'#FF6B5E':'#fff') :'rgba(255,255,255,.2)') }));
+    const next = ag[idx+1];
+
+    // qr
+    const signedCount = s.signins.length;
+    const signins = s.signins.slice().reverse().map(x=>({ name:x.name, initials:x.initials, part:x.part, color:x.color, status:x.status,
+      tagBg: x.onTime?'rgba(124,224,160,.16)':'rgba(255,107,94,.16)', tagFg: x.onTime?'#7CE0A0':'#FF9A8F' }));
+
+    // service
+    const checklist = this.checklistData.map((label,i)=>{ const on=!!s.checks[i]; return { label, toggle:()=>this.toggleCheck(i),
+      boxBg:on?'var(--gold)':'transparent', boxBd:on?'var(--gold)':'var(--line2)', tickOpacity:on?'1':'0',
+      textColor:on?'var(--ink3)':'var(--ink)', deco:on?'line-through':'none' }; });
+    const doneCount = Object.values(s.checks).filter(Boolean).length;
+    const songOrder = this.songOrderData.map((o,i)=>({ num:i+1, title:o.title, lead:o.lead, key:o.key }));
+
+    // pw
+    const pwSongs = this.pwSongsData.map((p,i)=>({ num:i+1, title:p.title, key:p.key, transition:p.transition }));
+
+    // ===== permissions-derived gating =====
+    const canManageMembers = this.can('*') || this.state.role==='admin';
+    const canAddSong   = this.can('add_song');
+    const canParts     = this.can('manage_parts');
+    const canAnnounce  = this.can('announce');
+    const canAssign    = this.can('assign_lead');
+    const canTask      = this.can('assign_owner');
+    const canBuild     = this.can('build_arrangement');
+    const roleLabel    = this.ROLE_LABEL[s.role];
+
+    // members grouped (active) + inactive group, with manage handlers
+    const partColor = { Soprano:'#5C53C4', Alto:'#B0843A', Tenor:'#3E7C53', Bass:'#2C2670' };
+    const order = ['Soprano','Alto','Tenor','Bass'];
+    const mkRow = m => ({ name:m.name, initials:m.initials, role:m.role, color: m.active? m.color : '#B8AE9B',
+      avail:m.invited?'Invited':m.avail,
+      availBg: m.invited?'var(--gold-soft)':(m.avail==='Available'?'var(--green-soft)':'var(--red-soft)'),
+      availFg: m.invited?'var(--gold-d)':(m.avail==='Available'?'var(--green)':'var(--red)'),
+      canManage: canManageMembers, manageShow: canManageMembers?'flex':'none',
+      manage:()=>this.openSheet('memberManage',{ name:m.name, role:m.role, active:m.active }) });
+    const memberGroups = order.map(part=>{
+      const ms = s.members.filter(m=>m.active && m.part===part).map(mkRow);
+      return { name:part, count:ms.length, color:partColor[part], members:ms };
+    }).filter(g=>g.count>0);
+    const inactive = s.members.filter(m=>!m.active);
+    if(inactive.length) memberGroups.push({ name:'Inactive · history kept', count:inactive.length, color:'#B8AE9B', members:inactive.map(mkRow) });
+    const activeCount = s.members.filter(m=>m.active).length;
+    const addMember = ()=>this.openSheet('member',{ name:'', contact:'', part:'Soprano', role:'Chorister', invite:false });
+
+    // announcements (noticeboard)
+    const notices = s.announcements.map(n=>({ ...n, pinned:!!n.pinned, audience:n.audience||'Everyone',
+      pinShow: n.pinned?'flex':'none' }));
+    const newAnnounce = ()=>this.openSheet('announce',{ title:'', body:'', audience:'Everyone', pin:false });
+
+    // ===== sheet view-model =====
+    const sh = s.sheet || {};
+    const sheetType = s.sheet ? s.sheet.type : '';
+    const sheetOpen = !!s.sheet;
+    const partList = ['Soprano','Alto','Tenor','Bass'];
+    const roleList = ['Director','Section Lead','Musician','Chorister'];
+    const audList  = ['Everyone','Soprano section','Alto section','Tenor section','Bass section','Leads only'];
+    const chip = (label, active, onPick) => ({ label, pick:onPick,
+      bg: active?'var(--indigo)':'var(--surface)', fg: active?'#fff':'var(--ink2)', bd: active?'var(--indigo)':'var(--line2)' });
+    const sheetPartChips = partList.map(p=>chip(p, sh.part===p, ()=>this.setSheet({part:p})));
+    const sheetRoleChips = roleList.map(r=>chip(r, sh.role===r, ()=>this.setSheet({role:r})));
+    const sheetAudChips  = audList.map(a=>chip(a, (sh.audience||'Everyone')===a, ()=>this.setSheet({audience:a})));
+    const pickerSel = sh.selected || [];
+    let pickerSrc = s.members.filter(m=>m.active);
+    if(sh.filterPart) pickerSrc = pickerSrc.filter(m=>m.part===sh.filterPart);
+    const pickerList = pickerSrc.map(m=>{
+      const sel = sheetType==='task' ? (sh.assignee===m.name) : pickerSel.includes(m.name);
+      const out = m.avail==='Unavailable';
+      return { name:m.name, initials:m.initials, part:m.part, color:m.color,
+        availLabel: out?'Unavailable':m.part, availColor: out?'var(--red)':'var(--ink3)',
+        rowBg: sel?'var(--indigo-soft)':'var(--surface)', rowBd: sel?'var(--indigo-l)':'var(--line2)',
+        check: sel?'1':'0', tick: sel?'var(--indigo)':'transparent', tickBd: sel?'var(--indigo)':'var(--line2)',
+        pick:()=> sheetType==='task' ? this.setSheet({assignee:m.name}) : this.toggleSel(m.name) };
+    });
+    const sheetTitles = { member:'Add member', memberManage:(sh.name||'Member'), announce:'New announcement',
+      assign:(sh.assignLabel||'Assign'), part:'Add a part', task:'Assign task',
+      arrangement:(sh.arrType==='ministration'?'New ministration':'New arrangement') };
+    const sheetVM = {
+      open:sheetOpen, type:sheetType, title:sheetTitles[sheetType]||'',
+      isMember:sheetType==='member', isManage:sheetType==='memberManage', isAnnounce:sheetType==='announce',
+      isAssign:sheetType==='assign', isPart:sheetType==='part', isTask:sheetType==='task', isArr:sheetType==='arrangement',
+      name:sh.name||'', contact:sh.contact||'', title2:sh.title||'', body:sh.body||'',
+      partName:sh.partName||'', partNotes:sh.partNotes||'', taskTitle:sh.taskTitle||'', due:sh.due||'',
+      arrTitle:sh.title||'', arrTypeLabel: sh.arrType==='ministration'?'Ministration':'Praise & Worship',
+      assigneeLabel: sh.assignee||'Tap a member below', manageActive:!!sh.active,
+      invite:!!sh.invite, inviteTrack: sh.invite?'var(--indigo)':'var(--line2)', inviteKnob: sh.invite?'translateX(19px)':'translateX(0)',
+      pin:!!sh.pin, pinTrack: sh.pin?'var(--gold)':'var(--line2)', pinKnob: sh.pin?'translateX(19px)':'translateX(0)',
+      partChips:sheetPartChips, roleChips:sheetRoleChips, audChips:sheetAudChips, picker:pickerList,
+      partOptShow:(sheetType==='member')?'block':'none',
+      setName:(e)=>this.setSheet({name:e.target.value}), setContact:(e)=>this.setSheet({contact:e.target.value}),
+      setTitle:(e)=>this.setSheet({title:e.target.value}), setBody:(e)=>this.setSheet({body:e.target.value}),
+      setPartName:(e)=>this.setSheet({partName:e.target.value}), setPartNotes:(e)=>this.setSheet({partNotes:e.target.value}),
+      setTaskTitle:(e)=>this.setSheet({taskTitle:e.target.value}), setDue:(e)=>this.setSheet({due:e.target.value}),
+      setArrTitle:(e)=>this.setSheet({title:e.target.value}),
+      toggleInvite:()=>this.setSheet({invite:!sh.invite}), togglePin:()=>this.setSheet({pin:!sh.pin}),
+      close:()=>this.closeSheet(),
+      saveMember:()=>this.saveMember(), applyRole:()=>this.applyMemberRole(), toggleActive:()=>this.toggleMemberActive(),
+      publish:()=>this.publishAnnouncement(), commit:()=>this.commitAssign(), savePart:()=>this.savePart(),
+      saveTask:()=>this.saveTask(), saveArr:()=>this.saveArrangement(),
+      manageDeactivateLabel: sh.active?'Deactivate member':'Reactivate member',
+      manageDeactivateBg: sh.active?'var(--red-soft)':'var(--green-soft)', manageDeactivateFg: sh.active?'var(--red)':'var(--green)'
+    };
+
+    // role switcher tabs
+    const roleTabs = ['admin','lead','musician','chorister'].map(r=>({
+      label: r==='admin'?'Admin':(r==='lead'?'Lead':(r==='musician'?'Musician':'Chorister')),
+      pick:()=>this.setRole(r),
+      bg: s.role===r?'#fff':'transparent', fg: s.role===r?'var(--indigo-d)':'rgba(255,255,255,.6)' }));
+
+    // song parts (detail screen)
+    const songObj = this.songs[s.songId];
+    const songParts = (s.parts[songObj.id]||[]).map(p=>({ name:p.name, notes:p.notes||'No notes yet', by:p.by||'Unassigned',
+      letter:(p.name||'?')[0], color: partColor[p.name]||'var(--indigo)',
+      stemLabel: p.stem?'Guide ready':'No guide yet', stemColor: p.stem?'var(--green)':'var(--ink3)' }));
+    const songIsComing = songObj.coming;
+    const addPart = ()=>this.openSheet('part',{ songId:songObj.id, partName:'', partNotes:'' });
+
+    // service duty (from serviceDuty)
+    const dutyDefs = [
+      { key:'lead',   role:'Worship lead',   label:'Assign worship lead', multi:false },
+      { key:'backup', role:'Backup singers', label:'Assign backups',      multi:true  },
+      { key:'keys',   role:'Keys',           label:'Assign keys',         multi:false },
+      { key:'drums',  role:'Drums',          label:'Assign drums',        multi:false }
+    ];
+    const duties = dutyDefs.map(d=>({ role:d.role, who:(s.serviceDuty[d.key]||[]).join(', ')||'— unassigned —',
+      canAssign, assignShow: canAssign?'flex':'none',
+      assign:()=>this.openSheet('assign',{ dutyKey:d.key, multi:d.multi, selected:[...(s.serviceDuty[d.key]||[])], assignLabel:d.label }) }));
+
+    // praise & worship lead + new
+    const pwLeadName = s.pwLeadName;
+    const assignPwLead = ()=>this.openSheet('assign',{ target:'pwlead', multi:false, selected:[s.pwLeadName], assignLabel:'Assign praise lead' });
+    const pwLeadInitials = (s.pwLeadName||'?').split(/\s+/).map(x=>x[0]).join('').slice(0,2).toUpperCase();
+    const pwActionShow = canBuild?'flex':'none';
+
+    // ministration / arrangements
+    const ministrations = s.arrangements.filter(a=>a.type==='ministration').map(a=>({ title:a.title, meta:a.songs+' songs · medley' }));
+    const newMinistration = ()=>this.newArrangement('ministration');
+
+    // events + tasks
+    const events = s.events.map((ev,i)=>({ title:ev.title, date:ev.date,
+      points: ev.points.map((p,j)=>({ text:p.text, owner:p.owner||'Unassigned',
+        ownerColor: p.owner?'var(--ink)':'var(--ink3)',
+        statusLabel: p.status, statusBg: p.status==='in progress'?'var(--gold-soft)':(p.status==='done'?'var(--green-soft)':'var(--surface2)'),
+        statusFg: p.status==='in progress'?'var(--gold-d)':(p.status==='done'?'var(--green)':'var(--ink3)'),
+        assignShow: canTask?'flex':'none', assign:()=>this.openSheet('task',{ taskTitle:p.text, eventIdx:i, pointIdx:j, assignee:p.owner||'', due:'' }) })) }));
+    const newTask = ()=>this.openSheet('task',{ taskTitle:'', assignee:'', due:'' });
+    const eventsNewShow = canTask?'flex':'none';
+    const ministrationNewShow = canBuild?'flex':'none';
+
+    // my week tasks (home)
+    const me = this.currentMember();
+    const myTasks = s.tasks.filter(t=> me && t.assignee===me.name).map(t=>({ title:t.title, due:t.due, status:t.status,
+      dotBg: t.status==='done'?'var(--green)':(t.status==='in progress'?'var(--gold)':'var(--indigo-l)') }));
+    const adminActions = canAnnounce || canManageMembers || canAddSong;
+    const toast = s.toast;
+
+    // more tiles
+    const ic = (path)=>React.createElement('svg',{width:20,height:20,viewBox:'0 0 24 24',fill:'none',stroke:'currentColor','strokeWidth':1.7,'strokeLinecap':'round','strokeLinejoin':'round',dangerouslySetInnerHTML:{__html:path}});
+    const moreTiles = [
+      { title:'Members', sub:'Directory · sections · roles', iconBg:'var(--indigo-soft)', icon: this.svg('users','#3F3795'), go:()=>this.go('members') },
+      { title:'Noticeboard', sub:'Announcements', iconBg:'var(--gold-soft)', icon: this.svg('bell','#8E681F'), go:()=>this.go('board') },
+      { title:'Uniform try-on', sub:'Vote on a look', iconBg:'var(--indigo-soft)', icon: this.svg('shirt','#3F3795'), go:()=>this.go('uniform') },
+      { title:'Vocal training', sub:'Breathing · warm-ups', iconBg:'var(--green-soft)', icon: this.svg('grad','#3E7C53'), go:()=>this.go('more') },
+      { title:'Special events', sub:'Plans & action points', iconBg:'var(--gold-soft)', icon: this.svg('star','#8E681F'), go:()=>this.go('events') },
+      { title:'Ministration', sub:'Final arrangements', iconBg:'var(--indigo-soft)', icon: this.svg('disc','#3F3795'), go:()=>this.go('ministration') }
+    ];
+
+    // uniform
+    const topColor = this.tops[s.uTop].color;
+    const bottomColor = this.bottoms[s.uBottom].color;
+    const accentColor = this.accents[s.uAccent].color;
+    const builds = [ {shL:30,shR:90,scale:0.88}, {shL:26,shR:94,scale:1}, {shL:22,shR:98,scale:1.12} ];
+    const b = builds[s.uBody];
+    const avatars = this.skins.slice(0,3).map((sk,i)=>({ skin:this.skins[(s.uSkin+i)%this.skins.length], hair:this.hairs[(s.uSkin+i)%this.hairs.length], dur:(3.6+i*0.5)+'s', shL:b.shL, shR:b.shR }));
+    const topOpts = this.tops.map((t,i)=>({ name:t.name, color:t.color, pick:()=>this.setState({uTop:i}), bd: s.uTop===i?'var(--indigo)':'var(--line2)', shadow: s.uTop===i?'0 0 0 3px var(--indigo-soft)':'none' }));
+    const accentOpts = this.accents.map((a,i)=>({ color:a.color, pick:()=>this.setState({uAccent:i}), bd: s.uAccent===i?'#fff':'transparent', }));
+    const skinOpts = this.skins.map((c,i)=>({ color:c, pick:()=>this.setState({uSkin:i}), bd: s.uSkin===i?'var(--indigo)':'transparent' }));
+    const bodyOpts = this.bodyNames.map((n,i)=>({ name:n, pick:()=>this.setState({uBody:i}), bg: s.uBody===i?'var(--indigo)':'var(--surface)', fg: s.uBody===i?'#fff':'var(--ink2)', bd: s.uBody===i?'var(--indigo)':'var(--line2)' }));
+    const totalVotes = Object.values(s.votes).reduce((a,c)=>a+c,0) || 1;
+    const looks = this.looksData.map((lk,i)=>({ name:lk.name, top:lk.top, bottom:lk.bottom, accent:lk.accent, skin:lk.skin,
+      votes:s.votes[i], pct: Math.round(s.votes[i]/totalVotes*100)+'%',
+      vote:()=>this.vote(i), btnLabel: s.voted[i]?'Voted':'Vote',
+      btnBg: s.voted[i]?'var(--green-soft)':'var(--indigo)', btnFg: s.voted[i]?'var(--green)':'#fff', btnBd: s.voted[i]?'#CDE3D2':'var(--indigo)' }));
+
+    // add-song chips
+    const keyList = ['C','D','Eb','F','G','Ab','A','Bb','B'];
+    const keyChips = keyList.map(k=>({ label:k, pick:()=>this.setF('key',k),
+      bg: s.f.key===k?'var(--indigo)':'var(--surface)', fg: s.f.key===k?'#fff':'var(--ink2)', bd: s.f.key===k?'var(--indigo)':'var(--line2)' }));
+    const tagList = ['Slow','Mid','Fast','Worship','Praise','Hymn','Igbo','Yoruba','English'];
+    const tagChips = tagList.map(t=>({ label:t, toggle:()=>this.toggleTag(t),
+      bg: s.f.tags.includes(t)?'var(--indigo-soft)':'var(--surface)', fg: s.f.tags.includes(t)?'var(--indigo-d)':'var(--ink2)', bd: s.f.tags.includes(t)?'var(--indigo-l)':'var(--line2)' }));
+
+    const navColor = g => (this.GROUP[v]===g ? 'var(--indigo)' : 'var(--ink3)');
+
+    return {
+      // view flags
+      vHome:v==='home', vSongs:v==='songs', vSong:v==='song', vAddSong:v==='addsong',
+      vRehearse:v==='rehearse', vRehearsal:v==='rehearsal', vQr:v==='qr', vLive:v==='live',
+      vService:v==='service', vPw:v==='pw', vMore:v==='more', vMembers:v==='members', vBoard:v==='board', vUniform:v==='uniform',
+      vMinistration:v==='ministration', vEvents:v==='events',
+      showNav: !['live','qr','addsong','song'].includes(v),
+
+      // ===== role + permissions =====
+      roleTabs, roleLabel,
+      canManageMembers, canAddSong, canParts, canAnnounce, canAssign, canTask, canBuild,
+      addSongShow: canAddSong?'flex':'none',
+
+      // ===== admin: members =====
+      addMember, memberManageShow: canManageMembers?'flex':'none',
+
+      // ===== admin: announcements =====
+      newAnnounce, announceShow: canAnnounce?'flex':'none',
+
+      // ===== admin: parts =====
+      songParts, songIsComing, addPart, partsManageShow: canParts?'flex':'none',
+
+      // ===== admin: duty / pw lead =====
+      pwLeadName, assignPwLead, pwLeadInitials, pwActionShow,
+
+      // ===== ministration / events / tasks =====
+      ministrations, newMinistration, ministrationNewShow, events, newTask, eventsNewShow,
+      myTasks, hasMyTasks: myTasks.length>0, adminActions,
+
+      // ===== sheet + toast =====
+      sheet:sheetVM, sheetOpen, toast, toastShow: toast?'flex':'none',
+      saveSong:()=>this.saveSong(),
+      goMinistration:()=>this.go('ministration'), goEvents:()=>this.go('events'),
+
+      // identity
+      choirName, memberName, initials, greetLabel:'Good evening',
+      topNotice: this.notices[0].body,
+
+      // home
+      tonightTitle:'Midweek rehearsal', tonightWhen:'Tonight · 7:00 PM · Main Auditorium', myDuty:'Alto sectional (15 min)',
+      weekStats:[ {value:'3', label:'Songs to learn'}, {value:'6', label:'Week streak'}, {value:'1', label:'Training due'} ],
+      learnList:learn,
+
+      // songs
+      comingSongs:coming, otherSongs:others, allCount:this.songs.length, filters,
+
+      // song detail
+      song:songVM, partRows,
+      playLabel: s.playing?'Pause':'Play all', playBg: s.playing?'var(--indigo)':'var(--surface)', playFg: s.playing?'#fff':'var(--ink)',
+      scrollLabel: s.playing?'Scrolling':'Paused', scrollDot: s.playing?'var(--green)':'var(--ink3)',
+      setLyricsRef:(el)=>{ this.lyricsEl=el; },
+
+      // rehearse
+      tonightTime:'7:00 PM', tonightPlace:'Main Auditorium',
+      agendaCount:this.agenda.length, agendaTotal:this.agenda.reduce((a,c)=>a+c.mins,0), memberCount:activeCount,
+      pastRehearsals:this.past,
+      agendaList:this.agenda.map((a,i)=>({ num:i+1, name:a.name, mins:a.mins, owner:a.owner, ownerInit:a.init,
+        dotBg: i===1?'var(--gold)':'var(--indigo-soft)', dotFg: i===1?'#fff':'var(--indigo-d)',
+        ownerBg: i===1?'var(--gold)':'var(--indigo)', ownerFg:'#fff' })),
+
+      // qr
+      qrCells:s.qrCells, qrCode: s.qrToken.slice(0,3)+' '+s.qrToken.slice(3), qrLeft:s.qrLeft, signins, signedCount,
+
+      // live
+      liveBg, liveSegs,
+      liveStepLabel:'Step '+(idx+1)+' of '+ag.length, liveName:cur.name, liveOwner:cur.owner, liveOwnerInit:cur.init, liveOwnerBg:'var(--indigo-l)',
+      liveTime:this.fmt(rem), liveTimeColor: over?'#FF8378':'#fff',
+      liveSubLabel: over?'over by':'remaining',
+      liveRing: 'conic-gradient('+ringColor+' '+pct+'%, rgba(255,255,255,.14) '+pct+'%)',
+      liveNext: next?next.name:'— end of rehearsal —',
+      liveRunning:s.liveRunning, livePaused:!s.liveRunning,
+
+      // service
+      serviceTitle:'Sunday Celebration Service', callTime:'7:30 AM', serviceTime:'9:00 AM',
+      checkDoneLabel: doneCount+'/'+this.checklistData.length,
+      pwName:'Sunday Praise — June', pwMeta:'3 songs · 3 loops · reusable',
+      songOrder, duties, checklist,
+
+      // pw
+      pwSongs, pwLoops:this.pwLoopsData,
+
+      // members
+      memberGroups,
+
+      // notices
+      notices,
+
+      // more
+      moreTiles,
+
+      // uniform
+      avatars, topColor, bottomColor, accentColor, topOpts, accentOpts, skinOpts, bodyOpts, looks,
+
+      // add song
+      f:s.f, keyChips, tagChips,
+      setTitle:(e)=>this.setF('title',e.target.value), setTempo:(e)=>this.setF('tempo',e.target.value),
+      setComposer:(e)=>this.setF('composer',e.target.value), setLyrics:(e)=>this.setF('lyrics',e.target.value),
+      toggleComing:()=>this.setF('coming',!s.f.coming),
+      comingTrack: s.f.coming?'var(--indigo)':'var(--line2)', comingKnob: s.f.coming?'translateX(19px)':'translateX(0)',
+
+      // handlers
+      back:()=>this.back(),
+      goSongs:()=>this.go('songs'), goAddSong:()=>this.go('addsong'),
+      goRehearse:()=>this.go('rehearse'), goRehearsal:()=>this.go('rehearsal'), goQr:()=>this.go('qr'),
+      goService:()=>this.go('service'), goPw:()=>this.go('pw'), goBoard:()=>this.go('board'), goMore:()=>this.go('more'),
+      startLive:()=>this.startLive(), toggleLive:()=>this.toggleLive(), prevItem:()=>this.prevItem(), nextItem:()=>this.nextItem(), exitLive:()=>this.exitLive(),
+      togglePlay:()=>this.togglePlay(), pitchPipe:()=>this.pitchPipe(),
+      navHome:()=>this.nav('home'), navSongs:()=>this.nav('songs'), navRehearse:()=>this.nav('rehearse'), navService:()=>this.nav('service'), navMore:()=>this.nav('more'),
+      cHome:navColor('home'), cSongs:navColor('songs'), cRehearse:navColor('rehearse'), cService:navColor('service'), cMore:navColor('more')
+    };
+  }
+
+  svg(name, color){
+    const P = {
+      users:'<circle cx="9" cy="8" r="3.2"/><path d="M3.5 20a5.5 5.5 0 0 1 11 0"/><path d="M16 6a3 3 0 0 1 0 6M21 20a5 5 0 0 0-4-4.9"/>',
+      bell:'<path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/>',
+      shirt:'<path d="M16 3l5 3-2.5 4L16 8.5V21H8V8.5L5.5 10 3 6l5-3 4 3 4-3z"/>',
+      grad:'<path d="M22 9 12 4 2 9l10 5 10-5z"/><path d="M6 11v5c0 1.5 3 3 6 3s6-1.5 6-3v-5"/>',
+      star:'<path d="M12 3l2.6 6.2 6.4.5-4.9 4.2 1.5 6.1L12 16.8 6.4 20l1.5-6.1L3 9.7l6.4-.5z"/>',
+      disc:'<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="2.5"/>'
+    };
+    return React.createElement('svg',{width:20,height:20,viewBox:'0 0 24 24',fill:'none',stroke:color,strokeWidth:1.7,strokeLinecap:'round',strokeLinejoin:'round',dangerouslySetInnerHTML:{__html:P[name]}});
+  }
+}
+</script>
+</body>
+</html>
