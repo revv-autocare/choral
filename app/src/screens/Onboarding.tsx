@@ -1,17 +1,19 @@
 import { useState } from 'react';
+import { Navigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { claimInvitedMembership, createChoirAsDirector } from '../lib/onboarding';
 import { Button } from '../components/ui/primitives';
 
 export default function Onboarding() {
-  const { session, refreshMember } = useAuth();
+  const { session, member, refreshMember } = useAuth();
   const [mode, setMode] = useState<'choose' | 'create'>('choose');
   const [checking, setChecking] = useState(false);
   const [choirName, setChoirName] = useState('');
   const [displayName, setDisplayName] = useState('');
   const [error, setError] = useState<string | null>(null);
 
-  if (!session) return null;
+  if (!session) return <Navigate to="/login" replace />;
+  if (member) return <Navigate to="/" replace />;
   const email = session.user.email ?? '';
 
   async function tryClaim() {

@@ -1,13 +1,18 @@
 import { useState } from 'react';
+import { Navigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
+import { useAuth } from '../hooks/useAuth';
 import { Button } from '../components/ui/primitives';
 
 export default function Login() {
+  const { session } = useAuth();
   const [mode, setMode] = useState<'signin' | 'signup'>('signin');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+
+  if (session) return <Navigate to="/" replace />;
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
