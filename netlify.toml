@@ -1,0 +1,16 @@
+# Netlify build config for the Choral PWA (app lives in app/).
+[build]
+  base = "app"
+  command = "npm run build"
+  publish = "dist"
+
+[build.environment]
+  NODE_VERSION = "22"
+
+# SPA fallback: let React Router handle any non-file route.
+# Real files (sw.js, manifest.webmanifest, assets/*) still serve directly
+# because this only applies when no static file matches.
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
