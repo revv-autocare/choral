@@ -42,6 +42,43 @@ export function useNextRehearsal() {
   });
 }
 
+export function useCreateRehearsal() {
+  const { member } = useAuth();
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (input: { title: string; place: string; starts_at: string }) => {
+      const { data, error } = await supabase
+        .from('rehearsals')
+        .insert({ choir_id: member!.choir_id, title: input.title, place: input.place, starts_at: input.starts_at })
+        .select('*')
+        .single();
+      if (error) throw error;
+      return data as Rehearsal;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['rehearsals'] });
+      qc.invalidateQueries({ queryKey: ['next_rehearsal'] });
+    },
+  });
+}
+
+export function useAddAgendaItem(rehearsalId: string) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (input: { name: string; minutes: number; owner_id: string | null; position: number }) => {
+      const { error } = await supabase.from('agenda_items').insert({
+        rehearsal_id: rehearsalId,
+        name: input.name,
+        minutes: input.minutes,
+        owner_id: input.owner_id,
+        position: input.position,
+      });
+      if (error) throw error;
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['agenda', rehearsalId] }),
+  });
+}
+
 export function useRehearsal(id: string | undefined) {
   return useQuery({
     queryKey: ['rehearsal', id],

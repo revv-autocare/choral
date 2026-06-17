@@ -20,6 +20,23 @@ export function useSpecialEvents() {
   });
 }
 
+export function useCreateEvent() {
+  const { member } = useAuth();
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (input: { title: string; event_date: string }) => {
+      const { data, error } = await supabase
+        .from('special_events')
+        .insert({ choir_id: member!.choir_id, title: input.title, event_date: input.event_date })
+        .select('*')
+        .single();
+      if (error) throw error;
+      return data as SpecialEvent;
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['special_events'] }),
+  });
+}
+
 export function useTasksForEvent(eventId: string | undefined) {
   return useQuery({
     queryKey: ['tasks', 'event', eventId],

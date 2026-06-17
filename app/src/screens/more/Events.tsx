@@ -1,14 +1,16 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useSpecialEvents, useTasksForEvent, useCreateTask, useAssignTask } from '../../hooks/useEvents';
+import { useSpecialEvents, useTasksForEvent, useCreateTask, useAssignTask, useCreateEvent } from '../../hooks/useEvents';
 import { useMembers } from '../../hooks/useMembers';
 import { usePermissions } from '../../hooks/usePermissions';
 import { Button, Card, ScreenHeader, SectionTitle } from '../../components/ui/primitives';
 import { Sheet } from '../../components/ui/Sheet';
+import { useToast } from '../../components/ui/Toast';
 
 export default function Events() {
   const nav = useNavigate();
-  const { can } = usePermissions();
+  const { show } = useToast();
+  const { can, isAdmin } = usePermissions();
   const { data: events } = useSpecialEvents();
   const { data: members } = useMembers();
 
@@ -16,12 +18,29 @@ export default function Events() {
   const { data: tasks } = useTasksForEvent(activeEvent ?? undefined);
   const createTask = useCreateTask();
   const assignTask = useAssignTask();
+  const createEvent = useCreateEvent();
 
   const [taskSheetOpen, setTaskSheetOpen] = useState(false);
   const [taskTitle, setTaskTitle] = useState('');
   const [assigning, setAssigning] = useState<string | null>(null);
 
+  const [eventSheetOpen, setEventSheetOpen] = useState(false);
+  const [evTitle, setEvTitle] = useState('');
+  const [evDate, setEvDate] = useState('');
+
   const event = events?.find((e) => e.id === activeEvent);
+
+  async function addEvent() {
+    if (!evTitle.trim() || !evDate) {
+      show('Add a title and date');
+      return;
+    }
+    await createEvent.mutateAsync({ title: evTitle.trim(), event_date: evDate });
+    setEvTitle('');
+    setEvDate('');
+    setEventSheetOpen(false);
+    show('Event created');
+  }
 
   async function addTask() {
     if (!taskTitle.trim() || !activeEvent) return;
@@ -100,7 +119,17 @@ export default function Events() {
 
   return (
     <div className="pb-10">
-      <ScreenHeader title="Special events" onBack={() => nav(-1)} />
+      <ScreenHeader
+        title="Special events"
+        onBack={() => nav(-1)}
+        right={
+          isAdmin && (
+            <button onClick={() => setEventSheetOpen(true)} className="text-xs font-semibold text-indigo">
+              + New
+            </button>
+          )
+        }
+      />
       <div className="px-5 flex flex-col gap-2.5">
         {(events ?? []).map((e) => (
           <button key={e.id} onClick={() => setActiveEvent(e.id)} className="w-full text-left">
@@ -117,6 +146,15 @@ export default function Events() {
         ))}
         {!events?.length && <div className="text-sm text-ink3">No special events scheduled.</div>}
       </div>
+
+      <Sheet open={eventSheetOpen} onClose={() => setEventSheetOpen(false)} title="New event">
+        <div className="flex flex-col gap-3">
+          <input value={evTitle} onChange={(e) => setEvTitle(e.target.value)} placeholder="Event title" className="border border-line2 rounded-xl px-4 py-3 text-sm font-medium bg-surface" />
+          <label className="text-xs font-semibold text-ink3">Date</label>
+          <input type="date" value={evDate} onChange={(e) => setEvDate(e.target.value)} className="border border-line2 rounded-xl px-4 py-3 text-sm font-medium bg-surface" />
+          <Button onClick={addEvent}>Create event</Button>
+        </div>
+      </Sheet>
     </div>
   );
 }

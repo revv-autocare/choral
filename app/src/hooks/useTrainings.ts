@@ -20,6 +20,24 @@ export function useVocalTrainings() {
   });
 }
 
+export function useCreateTraining() {
+  const { member } = useAuth();
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (input: { title: string; category: string; video_url: string | null }) => {
+      const { error } = await supabase.from('vocal_trainings').insert({
+        choir_id: member!.choir_id,
+        title: input.title,
+        category: input.category,
+        video_url: input.video_url,
+        is_builtin: false,
+      });
+      if (error) throw error;
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['vocal_trainings'] }),
+  });
+}
+
 export function useMyCompletedTrainings() {
   const { member } = useAuth();
   return useQuery({

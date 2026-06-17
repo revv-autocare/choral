@@ -7,5 +7,6 @@ export function usePermissions() {
     can: (action: Action) => can(member?.role, action),
     roleLabel: member ? ROLE_LABEL[member.role] : '',
     isAdmin: member?.role === 'director',
+    isLeadOrAbove: member?.role === 'director' || member?.role === 'section_lead',
   };
 }
